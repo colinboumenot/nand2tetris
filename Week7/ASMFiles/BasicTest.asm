@@ -1,0 +1,260 @@
+//C_PUSH constant 10
+@10
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1
+//C_POP local 0
+@1
+D=M
+@0
+D=D+A
+@13
+M=D
+@SP
+M=M-1
+A=M
+D=M
+@13
+A=M
+M=D
+//C_PUSH constant 21
+@21
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1
+//C_PUSH constant 22
+@22
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1
+//C_POP argument 2
+@2
+D=M
+@2
+D=D+A
+@13
+M=D
+@SP
+M=M-1
+A=M
+D=M
+@13
+A=M
+M=D
+//C_POP argument 1
+@2
+D=M
+@1
+D=D+A
+@13
+M=D
+@SP
+M=M-1
+A=M
+D=M
+@13
+A=M
+M=D
+//C_PUSH constant 36
+@36
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1
+//C_POP this 6
+@3
+D=M
+@6
+D=D+A
+@13
+M=D
+@SP
+M=M-1
+A=M
+D=M
+@13
+A=M
+M=D
+//C_PUSH constant 42
+@42
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1
+//C_PUSH constant 45
+@45
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1
+//C_POP that 5
+@4
+D=M
+@5
+D=D+A
+@13
+M=D
+@SP
+M=M-1
+A=M
+D=M
+@13
+A=M
+M=D
+//C_POP that 2
+@4
+D=M
+@2
+D=D+A
+@13
+M=D
+@SP
+M=M-1
+A=M
+D=M
+@13
+A=M
+M=D
+//C_PUSH constant 510
+@510
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1
+//C_POP temp 6
+@SP
+M=M-1
+A=M
+D=M
+@11
+M=D
+//C_PUSH local 0
+@1
+D=M
+@0
+D=D+A
+A=D
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1
+//C_PUSH that 5
+@4
+D=M
+@5
+D=D+A
+A=D
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1
+// ADD
+@SP
+A=M-1
+D=M
+@SP
+M=M-1
+@SP
+A=M-1
+M=M+D
+//C_PUSH argument 1
+@2
+D=M
+@1
+D=D+A
+A=D
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1
+// SUB
+@SP
+A=M-1
+D=M
+@SP
+M=M-1
+@SP
+A=M-1
+M=M-D
+//C_PUSH this 6
+@3
+D=M
+@6
+D=D+A
+A=D
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1
+//C_PUSH this 6
+@3
+D=M
+@6
+D=D+A
+A=D
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1
+// ADD
+@SP
+A=M-1
+D=M
+@SP
+M=M-1
+@SP
+A=M-1
+M=M+D
+// SUB
+@SP
+A=M-1
+D=M
+@SP
+M=M-1
+@SP
+A=M-1
+M=M-D
+//C_PUSH temp 6
+@11
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1
+// ADD
+@SP
+A=M-1
+D=M
+@SP
+M=M-1
+@SP
+A=M-1
+M=M+D
