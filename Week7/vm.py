@@ -63,26 +63,26 @@ class CodeWriter:
             self.asmFile.write('// EQ\n')
             label = '@EQ' + str(self.label_number)
             label_two = '@TWOEQ' + str(self.label_number)
-            label_declared = '(' + label + ')'
-            label_declared_two = '(' + label_two + ')'
+            label_declared = '(EQ' + str(self.label_number) + ')'
+            label_declared_two = '(TWOEQ' + str(self.label_number) + ')'
             self.label_number += 1
             self.asmFile.write('@SP\nA=M-1\nD=M\n@SP\nM=M-1\n@SP\nA=M-1\nD=M-D\n'+label+'\nD;JEQ\n@SP\nA=M-1\nM=0\n'+label_two+'\nD;JMP\n'+label_declared+'\n@SP\nA=M-1\nM=-1\n'+label_declared_two+'\n')
         elif command == 'gt':
             self.asmFile.write('// GT\n')
             label = '@GT' + str(self.label_number)
             label_two = '@TWOGT' + str(self.label_number)
-            label_declared = '(' + label + ')'
-            label_declared_two = '(' + label_two + ')'
+            label_declared = '(GT' + str(self.label_number) + ')'
+            label_declared_two = '(TWOGT' + str(self.label_number) + ')'
             self.label_number += 1
-            self.asmFile.write('@SP\nA=M-1\nD=M\n@SP\nM=M-1\n@SP\nA=M-1\nD=M-D\n' + label + '\nD;JEQ\n@SP\nA=M-1\nM=0\n' + label_two + '\nD;JMP\n' + label_declared + '\n@SP\nA=M-1\nM=-1\n' + label_declared_two + '\n')
+            self.asmFile.write('@SP\nA=M-1\nD=M\n@SP\nM=M-1\n@SP\nA=M-1\nD=M-D\n' + label + '\nD;JGT\n@SP\nA=M-1\nM=0\n' + label_two + '\nD;JMP\n' + label_declared + '\n@SP\nA=M-1\nM=-1\n' + label_declared_two + '\n')
         elif command == 'lt':
             self.asmFile.write('// LT\n')
             label = '@LT' + str(self.label_number)
             label_two = '@TWOLT' + str(self.label_number)
-            label_declared = '(' + label + ')'
-            label_declared_two = '(' + label_two + ')'
+            label_declared = '(LT' + str(self.label_number) + ')'
+            label_declared_two = '(TWOLT' + str(self.label_number) + ')'
             self.label_number += 1
-            self.asmFile.write('@SP\nA=M-1\nD=M\n@SP\nM=M-1\n@SP\nA=M-1\nD=M-D\n' + label + '\nD;JEQ\n@SP\nA=M-1\nM=0\n' + label_two + '\nD;JMP\n' + label_declared + '\n@SP\nA=M-1\nM=-1\n' + label_declared_two + '\n')
+            self.asmFile.write('@SP\nA=M-1\nD=M\n@SP\nM=M-1\n@SP\nA=M-1\nD=M-D\n' + label + '\nD;JLT\n@SP\nA=M-1\nM=0\n' + label_two + '\nD;JMP\n' + label_declared + '\n@SP\nA=M-1\nM=-1\n' + label_declared_two + '\n')
         elif command == 'and':
             self.asmFile.write('// AND\n')
             self.asmFile.write('@SP\nA=M-1\nD=M\n@SP\nM=M-1\n@SP\nA=M-1\nM=D&M\n')
