@@ -25,18 +25,26 @@ class Parser:
             return 'C_PUSH'
         elif self.currentCommand.split(" ")[0] == 'pop':
             return 'C_POP'
+        elif self.currentCommand.split(' ')[0] == 'label':
+            return 'C_LABEL'
+        elif self.currentCommand.split(' ')[0] == 'goto':
+            return 'C_GOTO'
+        elif self.currentCommand.split(' ')[0] == 'if-goto':
+            return 'C_IF'
+        elif self.currentCommand.split(' ')[0] == 'function':
+            return 'C_FUNCTION'
+        elif self.currentCommand == 'return':
+            return 'C_RETURN'
         return 'C_ARITHMETIC'
 
     def arg1(self):
         if self.commandType() == 'C_ARITHMETIC':
             return self.currentCommand.split(' ')[0]
-        elif self.commandType() in ['C_PUSH', 'C_POP']:
-            return self.currentCommand.split(' ')[1]
         else:
-            print('INVALID CALL OF ARG1')
+            return self.currentCommand.split(' ')[1]
 
     def arg2(self):
-        if self.commandType() in ['C_POP', 'C_PUSH']:
+        if self.commandType() in ['C_POP', 'C_PUSH', 'C_FUNCTION', 'C_RETURN']:
             return int(self.currentCommand.split(' ')[2])
         else:
             print("INVALID CALL OF ARG2")
