@@ -1,3 +1,5 @@
+import sys
+import os
 class Parser:
     def __init__(self, input_file):
         self.vmFile = open(input_file, 'r')
@@ -33,8 +35,10 @@ class Parser:
             return 'C_IF'
         elif self.currentCommand.split(' ')[0] == 'function':
             return 'C_FUNCTION'
-        elif self.currentCommand == 'return':
+        elif self.currentCommand.split(' ')[0] == 'return':
             return 'C_RETURN'
+        elif self.currentCommand.split(' ')[0] == 'call':
+            return 'C_CALL'
         return 'C_ARITHMETIC'
 
     def arg1(self):
@@ -44,7 +48,7 @@ class Parser:
             return self.currentCommand.split(' ')[1]
 
     def arg2(self):
-        if self.commandType() in ['C_POP', 'C_PUSH', 'C_FUNCTION', 'C_RETURN']:
+        if self.commandType() in ['C_POP', 'C_PUSH', 'C_FUNCTION', 'C_CALL']:
             return int(self.currentCommand.split(' ')[2])
         else:
             print("INVALID CALL OF ARG2")
@@ -52,10 +56,11 @@ class Parser:
 
 
 class CodeWriter:
-    def __init__(self, input_file, file_name):
+    def __init__(self, input_file):
         self.asmFile = open(input_file, 'w')
-        self.file_name = file_name
+        self.file_name = ''
         self.label_number = 0
+        self.function_name = 'OS'
 
     def writeArithmetic(self, command):
         if command == 'add':
@@ -152,16 +157,84 @@ class CodeWriter:
     def close(self):
         self.asmFile.close()
 
+    def setFileName(self, fileName):
+        self.file_name = fileName
 
-input_file = input('File Name: ')
-vmFile = Parser('VMFiles/' + input_file + '.vm')
-asmFile = CodeWriter('ASMFiles/' + input_file + '.asm', input_file)
+    def writeInit(self):
+        self.asmFile.write('// Init\n')
+        self.asmFile.write('@256\nD=A\n@SP\nM=D\n')
+        self.writeFunction('OS', 0)
+        self.writeCall('Sys.init', 0)
 
-while vmFile.hasMoreCommands():
-    vmFile.advance()
-    command_type = vmFile.commandType()
-    if command_type in ['C_PUSH', 'C_POP']:
-        asmFile.writePushPop(command_type, vmFile.arg1(), vmFile.arg2())
-    else:
-        asmFile.writeArithmetic(vmFile.arg1())
-asmFile.close()
+    def writeLabel(self, label):
+        self.asmFile.write('// Label\n')
+        self.asmFile.write('(' + self.function_name + '$' + label + ')\n')
+
+    def writeGoto(self, label):
+        self.asmFile.write('// Goto\n')
+        self.asmFile.write('@' + self.function_name + '$' + label + '\n')
+        self.asmFile.write('0;JMP\n')
+
+    def writeIf(self, label):
+        self.asmFile.write('// If-Goto\n')
+        self.asmFile.write('@SP\nAM=M-1\nD=M\n@' + self.function_name + '$' + label + '\nD;JNE\n')
+
+    def writeFunction(self, functionName, numVars):
+        self.asmFile.write('// Function\n')
+        self.function_name = functionName
+        self.asmFile.write('(' + self.function_name + ')\n')
+        for _ in range(numVars):
+            self.writePushPop('C_PUSH', 'constant', 0)
+
+    def writeCall(self, functionName, numArgs):
+        pass
+
+    def writeReturn(self):
+        pass
+
+
+def main():
+    inputFiles = []
+    userInput = input('Input File or Directory Name: ')
+    if os.path.isfile(userInput) and userInput[-3:] == '.vm':
+        inputFiles.append(userInput)
+        outputFileName = userInput[:-3] + '.asm'
+    elif os.path.isdir(userInput):
+        if userInput[-1:] == '/':
+            userInput = userInput[:-1]
+        for file in os.listdir(userInput):
+            if file[-3:] == '.vm':
+                inputFiles.append(userInput + '/' + file)
+        outputFileName = userInput + '.asm'
+
+    asmFile = CodeWriter(outputFileName)
+    asmFile.writeInit()
+
+    for inputFile in inputFiles:
+        fileName = inputFile.split('/')[-1][:-3]
+        asmFile.setFileName(fileName)
+        vmFile = Parser(inputFile)
+
+        while vmFile.hasMoreCommands():
+            vmFile.advance()
+            command_type = vmFile.commandType()
+            if command_type in ['C_PUSH', 'C_POP']:
+                asmFile.writePushPop(command_type, vmFile.arg1(), vmFile.arg2())
+            elif command_type == 'C_LABEL':
+                asmFile.writeLabel(vmFile.arg1())
+            elif command_type == 'C_IF':
+                asmFile.writeIf(vmFile.arg1())
+            elif command_type == 'C_GOTO':
+                asmFile.writeGoto(vmFile.arg1())
+            elif command_type == 'C_CALL':
+                asmFile.writeCall(vmFile.arg1(), vmFile.arg2())
+            elif command_type == 'C_FUNCTION':
+                asmFile.writeFunction(vmFile.arg1(), vmFile.arg2())
+            elif command_type == 'C_RETURN':
+                asmFile.writeReturn()
+            else:
+                asmFile.writeArithmetic(vmFile.arg1())
+    asmFile.close()
+
+if __name__ == '__main__':
+    main()
