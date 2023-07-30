@@ -177,7 +177,7 @@ class CodeWriter:
 
     def writeIf(self, label):
         self.asmFile.write('// If-Goto\n')
-        self.asmFile.write('@SP\nAM=M-1\nD=M\n@' + self.function_name + '$' + label + '\nD;JNE\n')
+        self.asmFile.write('@SP\nM=M-1\nA=M\nD=M\n@' + self.function_name + '$' + label + '\nD;JNE\n')
 
     def writeFunction(self, functionName, numVars):
         self.asmFile.write('// Function\n')
@@ -187,10 +187,30 @@ class CodeWriter:
             self.writePushPop('C_PUSH', 'constant', 0)
 
     def writeCall(self, functionName, numArgs):
-        pass
+        self.asmFile.write('// Call\n')
+        returnLabel = self.function_name + '$ret.' + str(self.label_number)
+        self.label_number += 1
+        self.asmFile.write('@' + returnLabel + '\nD=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n')
+        for segment in ['LCL', 'ARG', 'THIS', 'THAT']:
+            self.asmFile.write('@' + segment + '\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n')
+        self.asmFile.write('@SP\nD=M\n@5\nD=D-A\n@' + str(numArgs) + '\nD=D-A\n@ARG\nM=D\n')
+        self.asmFile.write('@SP\nD=M\n@LCL\nM=D\n')
+        self.asmFile.write('@' + functionName + '\n0;JMP\n')
+        self.asmFile.write('(' + returnLabel + ')\n')
 
     def writeReturn(self):
-        pass
+        self.asmFile.write('// Return\n')
+        self.asmFile.write('@LCL\nD=M\n@R13\nM=D\n')
+        self.asmFile.write('@5\nA=D-A\nD=M\n@R14\nM=D\n')
+        self.asmFile.write('@SP\nM=M-1\nA=M\nD=M\n@ARG\nA=M\nM=D\n')
+        self.asmFile.write('@ARG\nD=M+1\n@SP\nM=D\n')
+        self.asmFile.write('@R13\nA=M-1\nD=M\n@THAT\nM=D\n')
+        self.asmFile.write('@R13\nD=M\n@2\nA=D-A\n@THIS\nM=D\n')
+        self.asmFile.write('@R13\nD=M\n@3\nA=D-A\n@ARG\nM=D\n')
+        self.asmFile.write('@R13\nD=M\n@4\nA=D-A\n@LCL\nM=D\n')
+        #for segment in ['THAT', 'THIS', 'ARG', 'LCL']:
+            #self.asmFile.write('@endFrame\nM=M-1\nA=M\nD=M\n@' + segment + '\nM=D\n')
+        self.asmFile.write('@R14\nA=M\n0;JMP\n')
 
 
 def main():

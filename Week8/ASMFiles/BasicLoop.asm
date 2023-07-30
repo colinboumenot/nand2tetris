@@ -1,7 +1,9 @@
+// Init
 @256
 D=A
 @SP
 M=D
+// Function
 (OS)
 //C_PUSH constant 0
 @0
@@ -25,6 +27,7 @@ D=M
 @13
 A=M
 M=D
+// Label
 (OS$LOOP_START)
 //C_PUSH argument 0
 @2
@@ -128,8 +131,10 @@ A=M
 M=D
 @SP
 M=M+1
+// If-Goto
 @SP
-AM=M-1
+M=M-1
+A=M
 D=M
 @OS$LOOP_START
 D;JNE
