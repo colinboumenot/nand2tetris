@@ -65,10 +65,10 @@ class CodeWriter:
     def writeArithmetic(self, command):
         if command == 'add':
             self.asmFile.write('// ADD\n')
-            self.asmFile.write('@SP\nA=M-1\nD=M\n@SP\nM=M-1\n@SP\nA=M-1\nM=M+D\n')
+            self.asmFile.write('@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M+D\n@SP\nM=M+1\n')
         elif command == 'sub':
             self.asmFile.write('// SUB\n')
-            self.asmFile.write('@SP\nA=M-1\nD=M\n@SP\nM=M-1\n@SP\nA=M-1\nM=M-D\n')
+            self.asmFile.write('@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M-D\n@SP\nM=M+1\n')
         elif command == 'neg':
             self.asmFile.write('// NEG\n')
             self.asmFile.write('@SP\nA=M-1\nM=-M\n')
@@ -98,10 +98,10 @@ class CodeWriter:
             self.asmFile.write('@SP\nA=M-1\nD=M\n@SP\nM=M-1\n@SP\nA=M-1\nD=M-D\n' + label + '\nD;JLT\n@SP\nA=M-1\nM=0\n' + label_two + '\nD;JMP\n' + label_declared + '\n@SP\nA=M-1\nM=-1\n' + label_declared_two + '\n')
         elif command == 'and':
             self.asmFile.write('// AND\n')
-            self.asmFile.write('@SP\nA=M-1\nD=M\n@SP\nM=M-1\n@SP\nA=M-1\nM=D&M\n')
+            self.asmFile.write('@SP\nM=M-1\nA=M\nD=M\n@SP\nA=M-1\nM=D&M\n')
         elif command == 'or':
             self.asmFile.write('// OR\n')
-            self.asmFile.write('@SP\nA=M-1\nD=M\n@SP\nM=M-1\n@SP\nA=M-1\nM=D|M\n')
+            self.asmFile.write('@SP\nM=M-1\nA=M\nD=M\n@SP\nA=M-1\nM=D|M\n')
         elif command == 'not':
             self.asmFile.write('// NOT\n')
             self.asmFile.write('@SP\nA=M-1\nM=!M\n')
@@ -109,25 +109,25 @@ class CodeWriter:
     def writePushPop(self, command, segment, index):
         self.asmFile.write('//' + command + ' ' + segment + ' ' + str(index) + '\n')
         if segment == 'local':
-            self.asmFile.write('@1\nD=M\n@' + str(index) + '\n')
+            self.asmFile.write('@LCL\nD=M\n@' + str(index) + '\n')
             if command == 'C_PUSH':
                 self.asmFile.write('D=D+A\nA=D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n')
             elif command == 'C_POP':
                 self.asmFile.write('D=D+A\n@13\nM=D\n@SP\nM=M-1\nA=M\nD=M\n@13\nA=M\nM=D\n')
         elif segment == 'argument':
-            self.asmFile.write('@2\nD=M\n@' + str(index) + '\n')
+            self.asmFile.write('@ARG\nD=M\n@' + str(index) + '\n')
             if command == 'C_PUSH':
                 self.asmFile.write('D=D+A\nA=D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n')
             elif command == 'C_POP':
                 self.asmFile.write('D=D+A\n@13\nM=D\n@SP\nM=M-1\nA=M\nD=M\n@13\nA=M\nM=D\n')
         elif segment == 'this':
-            self.asmFile.write('@3\nD=M\n@' + str(index) + '\n')
+            self.asmFile.write('@THIS\nD=M\n@' + str(index) + '\n')
             if command == 'C_PUSH':
                 self.asmFile.write('D=D+A\nA=D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n')
             elif command == 'C_POP':
                 self.asmFile.write('D=D+A\n@13\nM=D\n@SP\nM=M-1\nA=M\nD=M\n@13\nA=M\nM=D\n')
         elif segment == 'that':
-            self.asmFile.write('@4\nD=M\n@' + str(index) + '\n')
+            self.asmFile.write('@THAT\nD=M\n@' + str(index) + '\n')
             if command == 'C_PUSH':
                 self.asmFile.write('D=D+A\nA=D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n')
             elif command == 'C_POP':
@@ -144,15 +144,15 @@ class CodeWriter:
                 self.asmFile.write('@SP\nM=M-1\nA=M\nD=M\n'+'@'+self.file_name+'.'+str(index)+'\nM=D\n')
         elif segment == 'temp':
             if command == 'C_PUSH':
-                self.asmFile.write('@'+str(int(index) + 5)+'\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n')
+                self.asmFile.write('@'+str(index + 5)+'\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n')
             elif command == 'C_POP':
                 self.asmFile.write('@SP\nM=M-1\nA=M\nD=M\n@'+str(int(index)+5)+'\nM=D\n')
         elif segment == 'pointer':
             pointer_address = 3
             if command == 'C_PUSH':
-                self.asmFile.write('@'+str(pointer_address+int(index))+'\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n')
+                self.asmFile.write('@'+str(pointer_address+index)+'\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n')
             elif command == 'C_POP':
-                self.asmFile.write('@SP\nM=M-1\nA=M\nD=M\n@'+str(pointer_address+int(index))+'\nM=D\n')
+                self.asmFile.write('@SP\nM=M-1\nA=M\nD=M\n@'+str(pointer_address+index)+'\nM=D\n')
 
     def close(self):
         self.asmFile.close()
@@ -200,17 +200,17 @@ class CodeWriter:
 
     def writeReturn(self):
         self.asmFile.write('// Return\n')
-        self.asmFile.write('@LCL\nD=M\n@R13\nM=D\n')
-        self.asmFile.write('@5\nA=D-A\nD=M\n@R14\nM=D\n')
+        self.asmFile.write('@LCL\nD=M\n@endFrame\nM=D\n')
+        self.asmFile.write('@5\nA=D-A\nD=M\n@retAddr\nM=D\n')
         self.asmFile.write('@SP\nM=M-1\nA=M\nD=M\n@ARG\nA=M\nM=D\n')
         self.asmFile.write('@ARG\nD=M+1\n@SP\nM=D\n')
-        self.asmFile.write('@R13\nA=M-1\nD=M\n@THAT\nM=D\n')
-        self.asmFile.write('@R13\nD=M\n@2\nA=D-A\n@THIS\nM=D\n')
-        self.asmFile.write('@R13\nD=M\n@3\nA=D-A\n@ARG\nM=D\n')
-        self.asmFile.write('@R13\nD=M\n@4\nA=D-A\n@LCL\nM=D\n')
+        self.asmFile.write('@endFrame\nA=M-1\nD=M\n@THAT\nM=D\n')
+        self.asmFile.write('@endFrame\nD=M\n@2\nA=D-A\nD=M\n@THIS\nM=D\n')
+        self.asmFile.write('@endFrame\nD=M\n@3\nA=D-A\nD=M\n@ARG\nM=D\n')
+        self.asmFile.write('@endFrame\nD=M\n@4\nA=D-A\nD=M\n@LCL\nM=D\n')
         #for segment in ['THAT', 'THIS', 'ARG', 'LCL']:
             #self.asmFile.write('@endFrame\nM=M-1\nA=M\nD=M\n@' + segment + '\nM=D\n')
-        self.asmFile.write('@R14\nA=M\n0;JMP\n')
+        self.asmFile.write('@retAddr\nA=M\n0;JMP\n')
 
 
 def main():
