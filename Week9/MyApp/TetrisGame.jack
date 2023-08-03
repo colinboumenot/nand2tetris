@@ -5,6 +5,7 @@ class TetrisGame {
    field boolean gameOver;
 
    constructor TetrisGame new(){
+     do World.setWorld();
      let world = World.getWorld();
      do Tetrominos.newWorld(world);
      let gameOver = false;
@@ -38,11 +39,12 @@ class TetrisGame {
          if (block.isGameOver()){
            let gameOver = true;
            do Screen.setColor(false);
-           do Screen.drawRectangle(0,0,512,256);
+           do Screen.drawRectangle(0,0,511,255);
            do Screen.setColor(true);
            return;
          }
        }
+       do Sys.wait(100);
        let currentKey = Keyboard.keyPressed();
        if (currentKey = 130){
          if (block > 0){
@@ -54,9 +56,9 @@ class TetrisGame {
            do block.moveRight();
          }
        }
-       if (currentKey = 130){
+       if (currentKey = 133){
          if (block > 0){
-           do block.moveDown();
+           let block = block.moveDown();
          }
        }
      }

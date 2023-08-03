@@ -4,8 +4,25 @@ class World {
 
    constructor World new(){
      var int x, y;
-     let map = Array.new(288);
+     let map = Array.new(512);
+     let x = 0;
+     while(x < 32) {
+       let map[(32 * 15) + x] = 1;
+       let x = x + 1;
+     }
+
+     let y = 0;
+     while (y < 16) {
+       let map[(32 * y) + 0] = 1;
+       let map[(32 * y) + 31] = 1;
+       let y = y + 1;
+     }
      return this;
+   }
+
+   function void setWorld(){
+     let worldInstance = World.new();
+     return;
    }
 
    function World getWorld(){
@@ -30,13 +47,13 @@ class World {
      var Array canBeDestroyed;
      var boolean isDestroyed;
      var int offset;
-     let canBeDestroyed = Array.new(18);
+     let canBeDestroyed = Array.new(15);
      let isDestroyed = false;
 
-     let idx = (17*16) + 32;
-     let dy = 17;
+     let idx = (14*32) + 30;
+     let dy = 14;
      while(dy > 1){
-       let dx = 32;
+       let dx = 30;
        let canBeDestroyed[dy] = true;
        while(dx > 0){
          if(map[idx] = 0){
@@ -60,11 +77,11 @@ class World {
 
      do draw();
 
-     let idx = (17*16) + 32;
-     let dy = 17;
+     let idx = (14*32) + 30;
+     let dy = 14;
      while (dy > 1) {
        if (canBeDestroyed[dy]) {
-         let dx = 32;
+         let dx = 30;
          while (dx > 0) {
            let map[idx] = 0;
            let idx = idx - 1;
@@ -72,7 +89,7 @@ class World {
          }
          let idx = idx - 2;
        } else {
-         let idx = idx - 16;
+         let idx = idx - 32;
        }
        let dy = dy - 1;
      }
@@ -81,8 +98,8 @@ class World {
      let canBeDestroyed[0] = false;
      let canBeDestroyed[1] = false;
 
-     let idx = (17*16) + 32;
-     let dy = 17;
+     let idx = (14*32) + 30;
+     let dy = 14;
      let offset = 0;
      while ((~(dy < 0))) {
 
@@ -100,16 +117,16 @@ class World {
        }
 
        if (~((dy - offset) < 0)) {
-         let dx = 32;
+         let dx = 30;
          while (dx > 0) {
-           let map[idx] = map[idx - (offset * 16)];
+           let map[idx] = map[idx - (offset * 32)];
 
            let idx = idx - 1;
            let dx = dx - 1;
          }
          let idx = idx - 2;
        } else {
-         let dx = 32;
+         let dx = 30;
          while (dx > 0) {
            let map[idx] = 0;
 
@@ -129,13 +146,13 @@ class World {
    method void draw(){
      var int dx, dy, idx;
      do Screen.setColor(false);
-     do Screen.drawRectangle(0, 0, 512, 256);
+     do Screen.drawRectangle(0, 0, 511, 255);
      do Screen.setColor(true);
-     let idx = (2 * 16) + 1;
+     let idx = (2 * 32) + 1;
      let dy = 2;
-     while(dy < 17){
-       let dx = 0;
-       while(dx < 33){
+     while(dy < 15){
+       let dx = 1;
+       while(dx < 31){
          if (map[idx] = 1){
            do drawSquare(dx, dy);
          }
@@ -149,11 +166,11 @@ class World {
    }
 
    method void placeShape(int x, int y){
-     let map[(16 * y) + x] = 1;
+     let map[(32 * y) + x] = 1;
      return;
    }
 
    method boolean isEmpty(int x, int y){
-     return map[(16 * y) + x] = 0;
+     return map[(32 * y) + x] = 0;
    }
 }

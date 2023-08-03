@@ -2,6 +2,8 @@ function TetrisGame.new 0
 push constant 1
 call Memory.alloc 1
 pop pointer 0
+call World.setWorld 0
+pop temp 0
 call World.getWorld 0
 pop static 1
 push static 1
@@ -64,8 +66,8 @@ call Screen.setColor 1
 pop temp 0
 push constant 0
 push constant 0
-push constant 512
-push constant 256
+push constant 511
+push constant 255
 call Screen.drawRectangle 4
 pop temp 0
 push constant 0
@@ -76,6 +78,9 @@ push constant 0
 return
 label IF_FALSE1
 label IF_FALSE0
+push constant 100
+call Sys.wait 1
+pop temp 0
 call Keyboard.keyPressed 0
 pop local 2
 push local 2
@@ -113,7 +118,7 @@ pop temp 0
 label IF_FALSE5
 label IF_FALSE4
 push local 2
-push constant 130
+push constant 133
 eq
 if-goto IF_TRUE6
 goto IF_FALSE6
@@ -126,7 +131,7 @@ goto IF_FALSE7
 label IF_TRUE7
 push local 0
 call Tetrominos.moveDown 1
-pop temp 0
+pop local 0
 label IF_FALSE7
 label IF_FALSE6
 goto WHILE_EXP0

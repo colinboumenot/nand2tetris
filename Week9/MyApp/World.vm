@@ -2,10 +2,79 @@ function World.new 2
 push constant 1
 call Memory.alloc 1
 pop pointer 0
-push constant 288
+push constant 512
 call Array.new 1
 pop this 0
+push constant 0
+pop local 0
+label WHILE_EXP0
+push local 0
+push constant 32
+lt
+not
+if-goto WHILE_END0
+push constant 32
+push constant 15
+call Math.multiply 2
+push local 0
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push local 0
+push constant 1
+add
+pop local 0
+goto WHILE_EXP0
+label WHILE_END0
+push constant 0
+pop local 1
+label WHILE_EXP1
+push local 1
+push constant 16
+lt
+not
+if-goto WHILE_END1
+push constant 32
+push local 1
+call Math.multiply 2
+push constant 0
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 32
+push local 1
+call Math.multiply 2
+push constant 31
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push local 1
+push constant 1
+add
+pop local 1
+goto WHILE_EXP1
+label WHILE_END1
 push pointer 0
+return
+function World.setWorld 0
+call World.new 0
+pop static 0
+push constant 0
 return
 function World.getWorld 0
 push static 0
@@ -66,18 +135,18 @@ return
 function World.checkForLines 7
 push argument 0
 pop pointer 0
-push constant 18
+push constant 15
 call Array.new 1
 pop local 4
 push constant 0
 pop local 5
-push constant 17
-push constant 16
-call Math.multiply 2
+push constant 14
 push constant 32
+call Math.multiply 2
+push constant 30
 add
 pop local 2
-push constant 17
+push constant 14
 pop local 1
 label WHILE_EXP0
 push local 1
@@ -85,7 +154,7 @@ push constant 1
 gt
 not
 if-goto WHILE_END0
-push constant 32
+push constant 30
 pop local 0
 push local 1
 push local 4
@@ -167,13 +236,13 @@ label IF_FALSE2
 push pointer 0
 call World.draw 1
 pop temp 0
-push constant 17
-push constant 16
-call Math.multiply 2
+push constant 14
 push constant 32
+call Math.multiply 2
+push constant 30
 add
 pop local 2
-push constant 17
+push constant 14
 pop local 1
 label WHILE_EXP2
 push local 1
@@ -189,7 +258,7 @@ push that 0
 if-goto IF_TRUE3
 goto IF_FALSE3
 label IF_TRUE3
-push constant 32
+push constant 30
 pop local 0
 label WHILE_EXP3
 push local 0
@@ -222,7 +291,7 @@ pop local 2
 goto IF_END3
 label IF_FALSE3
 push local 2
-push constant 16
+push constant 32
 sub
 pop local 2
 label IF_END3
@@ -251,13 +320,13 @@ pop temp 0
 pop pointer 1
 push temp 0
 pop that 0
-push constant 17
-push constant 16
-call Math.multiply 2
+push constant 14
 push constant 32
+call Math.multiply 2
+push constant 30
 add
 pop local 2
-push constant 17
+push constant 14
 pop local 1
 push constant 0
 pop local 6
@@ -321,7 +390,7 @@ not
 if-goto IF_TRUE6
 goto IF_FALSE6
 label IF_TRUE6
-push constant 32
+push constant 30
 pop local 0
 label WHILE_EXP6
 push local 0
@@ -334,7 +403,7 @@ push this 0
 add
 push local 2
 push local 6
-push constant 16
+push constant 32
 call Math.multiply 2
 sub
 push this 0
@@ -361,7 +430,7 @@ sub
 pop local 2
 goto IF_END6
 label IF_FALSE6
-push constant 32
+push constant 30
 pop local 0
 label WHILE_EXP7
 push local 0
@@ -414,8 +483,8 @@ call Screen.setColor 1
 pop temp 0
 push constant 0
 push constant 0
-push constant 512
-push constant 256
+push constant 511
+push constant 255
 call Screen.drawRectangle 4
 pop temp 0
 push constant 0
@@ -423,7 +492,7 @@ not
 call Screen.setColor 1
 pop temp 0
 push constant 2
-push constant 16
+push constant 32
 call Math.multiply 2
 push constant 1
 add
@@ -432,15 +501,15 @@ push constant 2
 pop local 1
 label WHILE_EXP0
 push local 1
-push constant 17
+push constant 15
 lt
 not
 if-goto WHILE_END0
-push constant 0
+push constant 1
 pop local 0
 label WHILE_EXP1
 push local 0
-push constant 33
+push constant 31
 lt
 not
 if-goto WHILE_END1
@@ -485,7 +554,7 @@ return
 function World.placeShape 0
 push argument 0
 pop pointer 0
-push constant 16
+push constant 32
 push argument 2
 call Math.multiply 2
 push argument 1
@@ -502,7 +571,7 @@ return
 function World.isEmpty 0
 push argument 0
 pop pointer 0
-push constant 16
+push constant 32
 push argument 2
 call Math.multiply 2
 push argument 1
