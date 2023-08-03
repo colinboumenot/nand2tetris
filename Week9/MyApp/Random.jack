@@ -1,0 +1,31 @@
+class Random {
+
+   static int seed;
+
+   function void setSeed(int number){
+     let seed = number;
+     return;
+   }
+
+   function int getRandom(){
+     let seed = seed + 20251;
+     if (seed < 0){
+       let seed = seed - 32767 - 1;
+     }
+     return seed;
+   }
+
+   function int randomRange(int end){
+     var int shift;
+     var int randomNumber;
+     let shift = 1;
+     while (shift < end){
+       let shift = shift * 2 + 1;
+     }
+     let randomNumber = Random.getRandom() & shift;
+     while (randomNumber > end){
+       let randomNumber = Random.getRandom() & shift;
+     }
+     return randomNumber;
+   }
+}

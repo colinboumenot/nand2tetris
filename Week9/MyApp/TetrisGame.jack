@@ -1,0 +1,66 @@
+class TetrisGame {
+
+   static TetrisGame game;
+   static World world;
+   field boolean gameOver;
+
+   constructor TetrisGame new(){
+     let world = World.getWorld();
+     do Tetrominos.newWorld(world);
+     let gameOver = false;
+     return this;
+   }
+
+   method void dispose(){
+     do Memory.deAlloc(this);
+     return;
+   }
+
+   function void newGame(){
+     let game = TetrisGame.new();
+     return;
+   }
+
+   function TetrisGame getGame(){
+     return game;
+   }
+
+   method void run(){
+     var Tetrominos block;
+     var Tetrominos nextBlock;
+     var char currentKey;
+     let nextBlock = Tetrominos.spawn(Random.randomRange(6));
+
+     while(~gameOver){
+       if (block = 0){
+         let block = nextBlock;
+         let nextBlock = Tetrominos.spawn(Random.randomRange(6));
+         if (block.isGameOver()){
+           let gameOver = true;
+           do Screen.setColor(false);
+           do Screen.drawRectangle(0,0,512,256);
+           do Screen.setColor(true);
+           return;
+         }
+       }
+       let currentKey = Keyboard.keyPressed();
+       if (currentKey = 130){
+         if (block > 0){
+           do block.moveLeft();
+         }
+       }
+       if (currentKey = 132){
+         if (block > 0){
+           do block.moveRight();
+         }
+       }
+       if (currentKey = 130){
+         if (block > 0){
+           do block.moveDown();
+         }
+       }
+     }
+     return;
+   }
+}
+

@@ -1,0 +1,135 @@
+function TetrisGame.new 0
+push constant 1
+call Memory.alloc 1
+pop pointer 0
+call World.getWorld 0
+pop static 1
+push static 1
+call Tetrominos.newWorld 1
+pop temp 0
+push constant 0
+pop this 0
+push pointer 0
+return
+function TetrisGame.dispose 0
+push argument 0
+pop pointer 0
+push pointer 0
+call Memory.deAlloc 1
+pop temp 0
+push constant 0
+return
+function TetrisGame.newGame 0
+call TetrisGame.new 0
+pop static 0
+push constant 0
+return
+function TetrisGame.getGame 0
+push static 0
+return
+function TetrisGame.run 3
+push argument 0
+pop pointer 0
+push constant 6
+call Random.randomRange 1
+call Tetrominos.spawn 1
+pop local 1
+label WHILE_EXP0
+push this 0
+not
+not
+if-goto WHILE_END0
+push local 0
+push constant 0
+eq
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push local 1
+pop local 0
+push constant 6
+call Random.randomRange 1
+call Tetrominos.spawn 1
+pop local 1
+push local 0
+call Tetrominos.isGameOver 1
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push constant 0
+not
+pop this 0
+push constant 0
+call Screen.setColor 1
+pop temp 0
+push constant 0
+push constant 0
+push constant 512
+push constant 256
+call Screen.drawRectangle 4
+pop temp 0
+push constant 0
+not
+call Screen.setColor 1
+pop temp 0
+push constant 0
+return
+label IF_FALSE1
+label IF_FALSE0
+call Keyboard.keyPressed 0
+pop local 2
+push local 2
+push constant 130
+eq
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push local 0
+push constant 0
+gt
+if-goto IF_TRUE3
+goto IF_FALSE3
+label IF_TRUE3
+push local 0
+call Tetrominos.moveLeft 1
+pop temp 0
+label IF_FALSE3
+label IF_FALSE2
+push local 2
+push constant 132
+eq
+if-goto IF_TRUE4
+goto IF_FALSE4
+label IF_TRUE4
+push local 0
+push constant 0
+gt
+if-goto IF_TRUE5
+goto IF_FALSE5
+label IF_TRUE5
+push local 0
+call Tetrominos.moveRight 1
+pop temp 0
+label IF_FALSE5
+label IF_FALSE4
+push local 2
+push constant 130
+eq
+if-goto IF_TRUE6
+goto IF_FALSE6
+label IF_TRUE6
+push local 0
+push constant 0
+gt
+if-goto IF_TRUE7
+goto IF_FALSE7
+label IF_TRUE7
+push local 0
+call Tetrominos.moveDown 1
+pop temp 0
+label IF_FALSE7
+label IF_FALSE6
+goto WHILE_EXP0
+label WHILE_END0
+push constant 0
+return
