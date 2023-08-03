@@ -12,7 +12,7 @@ class Tetrominos {
      let y = 0;
      let shapeMap = Array.new(16);
      do makePatterns();
-     let currentShape = shapeMap
+     let currentShape = shapeMap;
      return this;
    }
    
@@ -21,17 +21,12 @@ class Tetrominos {
      return;
    }
 
-   function Block spawn(int number){
-     var Block block;
-     let block = Block.new(number)
-     do block.draw()
+   function Tetrominos spawn(int number){
+     var Tetrominos block;
+     let block = Tetrominos.new(number);
+     do block.drawShape();
      return block;
    }
-
-  // method void drawSquare(int start, int end){
-    // do Screen.drawRectangle(start * 16, end * 16, (start * 16) + 16, (end * 16) + 16);
-     //return;
-   //}
 
    method void drawShape(){
      var int dx, dy, idx;
@@ -40,10 +35,10 @@ class Tetrominos {
      let dy = y;
 
      while(dy < (y + 4)) {
-       if(~(dy < 1) & ~(dy > 17)) {
+       if(~(dy < 2) & ~(dy > 14)) {
          let dx = x;
          while(dx < (x + 4)) {
-           if(~(dx < 1) & ~(dx > 32) & (~(currentShape[idx] = 0))) {
+           if(~(dx < 1) & ~(dx > 30) & (~(currentShape[idx] = 0))) {
              do world.drawSquare(dx,dy);
            }
            let idx = idx + 1;
@@ -57,13 +52,6 @@ class Tetrominos {
      return;
    }
 
-  // method void eraseSquare(int start, int end){
-    // do Screen.setColor(false)
-     //do Screen.drawRectangle(start * 16, end * 16, (start * 16) + 16, (end * 16) + 16);
-     //do Screen.setColor(true)
-     //return;
-   //}
-
    method void eraseShape(){
      var int dx, dy, idx;
 
@@ -71,10 +59,10 @@ class Tetrominos {
      let dy = y;
 
      while(dy < (y + 4)) {
-       if(~(dy < 1) & ~(dy > 17)) {
+       if(~(dy < 0) & ~(dy > 16)) {
          let dx = x;
          while(dx < (x + 4)) {
-           if(~(dx < 1) & ~(dx > 32) & (~(currentShape[idx] = 0))) {
+           if(~(dx < 0) & ~(dx > 32) & (~(currentShape[idx] = 0))) {
              do world.eraseSquare(dx,dy);
            }
            let idx = idx + 1;
@@ -97,7 +85,7 @@ class Tetrominos {
    
    method boolean canMove(int dx, int dy){
      var int counterX, counterY, idx;
-     let idx = 0
+     let idx = 0;
      let counterY = y + dy;
 
      while(counterY < (y + dy + 4)) {
@@ -128,7 +116,7 @@ class Tetrominos {
          }
          let idx = idx + 1;
          let dx = dx + 1;
-         }
+       }
        let dy = dy + 1;
      }
      do world.checkForLines();
@@ -156,6 +144,7 @@ class Tetrominos {
        let shapeMap[14] = 0;
        let shapeMap[15] = 0;
        return;
+     }
      if (shapeNumber = 1){
 	//i
        let shapeMap[0] = 0;
@@ -175,6 +164,7 @@ class Tetrominos {
        let shapeMap[14] = 0;
        let shapeMap[15] = 0;
        return;
+     }
      if (shapeNumber = 2){
        //s
        let shapeMap[0] = 0;
@@ -194,6 +184,7 @@ class Tetrominos {
        let shapeMap[14] = 0;
        let shapeMap[15] = 0;
        return;
+     }
      if (shapeNumber = 3){
        //Z
        let shapeMap[0] = 1;
@@ -213,6 +204,7 @@ class Tetrominos {
        let shapeMap[14] = 0;
        let shapeMap[15] = 0;
        return;
+     }
      if (shapeNumber = 4){
        //L
        let shapeMap[0] = 0;
@@ -232,6 +224,7 @@ class Tetrominos {
        let shapeMap[14] = 0;
        let shapeMap[15] = 0;
        return;
+     }
      if (shapeNumber = 5){
        //J
        let shapeMap[0] = 1;
@@ -251,6 +244,7 @@ class Tetrominos {
        let shapeMap[14] = 0;
        let shapeMap[15] = 0;
        return;
+     }
      if (shapeNumber = 6){
        //T
        let shapeMap[0] = 0;
@@ -270,36 +264,47 @@ class Tetrominos {
        let shapeMap[14] = 0;
        let shapeMap[15] = 0;
        return;
+     }
+     return;
    }
 
    method boolean isGameOver(){
      return ~canMove(0,0);
    }
 
-   method void moveDown(){
+   method Block moveDown(){
      if(canMove(0,1)){
        do eraseShape();
        let y = y + 1;
        do drawShape();
+       return this;
+     }else{
+       do stopShape();
+       return null;
      }
-     return;
    }
 
 
    method void moveLeft(){
-     if(canMove(-1,0)){
-       do eraseShape();
-       let x = x - 1;
-       do drawShape();
+     if (x > 0){
+       if (x < 32){
+         if(canMove(-1,0)){
+         do eraseShape();
+         let x = x - 1;
+         do drawShape();
+         }
+       }
      }
      return;
    }
 
    method void moveRight(){
-     if(canMove(1,0)){
-       do eraseShape();
-       let x = x + 1;
-       do drawShape();
+     if (x < 31){
+       if(canMove(1,0)){
+         do eraseShape();
+         let x = x + 1;
+         do drawShape();
+       }
      }
      return;
    }
