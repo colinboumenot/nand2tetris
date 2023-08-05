@@ -16,35 +16,17 @@ class CompilationEngine:
             self.inputFile.advance()
             self.outputFile.write('<class>\n')
             self.spacesIndented += 1
-            self.outputFile.write(' ' * self.spacesIndented + '<keyword> ' + self.inputFile.keyWord() + ' </keyword>\n')
+            self.compileKeyword()
             self.inputFile.advance()
-            self.outputFile.write(' ' * self.spacesIndented + '<identifier> ' + self.inputFile.identifier() + ' </identifier>\n')
+            self.compileIdentifier()
             self.inputFile.advance()
-            symbol = self.inputFile.symbol()
-            if symbol == '<':
-                addString = '&lt'
-            elif symbol == '>':
-                addString = '&gt'
-            elif symbol == '&':
-                addString = '&amp'
-            else:
-                addString = ''
-            self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+            self.compileSymbol()
             self.inputFile.advance()
             while self.inputFile.keyWord() in ['static', 'field']:
                 self.CompileClassVarDec()
             while self.inputFile.keyWord in ['constructor', 'function', 'method']:
                 self.CompileSubroutineDec()
-            symbol = self.inputFile.symbol()
-            if symbol == '<':
-                addString = '&lt'
-            elif symbol == '>':
-                addString = '&gt'
-            elif symbol == '&':
-                addString = '&amp'
-            else:
-                addString = ''
-            self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+            self.compileSymbol()
             self.spacesIndented -= 1
             self.outputFile.write('</class>\n')
             self.outputFile.close()
@@ -52,43 +34,25 @@ class CompilationEngine:
     def CompileClassVarDec(self):
         self.outputFile.write(' ' * self.spacesIndented + '<classVarDec>\n')
         self.spacesIndented += 1
-        self.outputFile.write(' ' * self.spacesIndented + '<keyword> ' + self.inputFile.keyWord() + ' </keyword>\n')
+        self.compileKeyword()
         self.inputFile.advance()
 
         if self.inputFile.tokenType() == 'KEYWORD':
-            self.outputFile.write(' ' * self.spacesIndented + '<keyword> ' + self.inputFile.keyWord() + ' </keyword>\n')
+            self.compileKeyword()
         elif self.inputFile.tokenType() == 'IDENTIFIER':
-            self.outputFile.write(' ' * self.spacesIndented + '<identifier> ' + self.inputFile.identifier() + ' </identifier>\n')
+            self.compileIdentifier()
 
         self.inputFile.advance()
-        self.outputFile.write(' ' * self.spacesIndented + '<identifier> ' + self.inputFile.identifier() + ' </identifier>\n')
+        self.compileIdentifier()
         self.inputFile.advance()
 
         while self.inputFile.symbol() == ',':
-            symbol = self.inputFile.symbol()
-            if symbol == '<':
-                addString = '&lt'
-            elif symbol == '>':
-                addString = '&gt'
-            elif symbol == '&':
-                addString = '&amp'
-            else:
-                addString = ''
-            self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+            self.compileSymbol()
             self.inputFile.advance()
-            self.outputFile.write(' ' * self.spacesIndented + '<identifier> ' + self.inputFile.identifier() + ' </identifier>\n')
+            self.compileIdentifier()
             self.inputFile.advance()
 
-        symbol = self.inputFile.symbol()
-        if symbol == '<':
-            addString = '&lt'
-        elif symbol == '>':
-            addString = '&gt'
-        elif symbol == '&':
-            addString = '&amp'
-        else:
-            addString = ''
-        self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+        self.compileSymbol()
 
         self.inputFile.advance()
         self.spacesIndented -= 1
@@ -97,40 +61,22 @@ class CompilationEngine:
     def CompileSubroutineDec(self):
         self.outputFile.write(' ' * self.spacesIndented + '<subroutineDec>\n')
         self.spacesIndented += 1
-        self.outputFile.write(' ' * self.spacesIndented + '<keyword> ' + self.inputFile.keyWord() + ' </keyword>\n')
+        self.compileKeyword()
         self.inputFile.advance()
 
         if self.inputFile.tokenType() == 'KEYWORD':
-            self.outputFile.write(' ' * self.spacesIndented + '<keyword> ' + self.inputFile.keyWord() + ' </keyword>\n')
+            self.compileKeyword()
         elif self.inputFile.tokenType() == 'IDENTIFIER':
-            self.outputFile.write(' ' * self.spacesIndented + '<identifier> ' + self.inputFile.identifier() + ' </identifier>\n')
+            self.compileIdentifier()
         self.inputFile.advance()
 
-        self.outputFile.write(' ' * self.spacesIndented + '<identifier> ' + self.inputFile.identifier() + ' </identifier>\n')
+        self.compileIdentifier()
         self.inputFile.advance()
-        symbol = self.inputFile.symbol()
-        if symbol == '<':
-            addString = '&lt'
-        elif symbol == '>':
-            addString = '&gt'
-        elif symbol == '&':
-            addString = '&amp'
-        else:
-            addString = ''
-        self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+        self.compileSymbol()
         self.inputFile.advance()
 
         self.compileParameterList()
-        symbol = self.inputFile.symbol()
-        if symbol == '<':
-            addString = '&lt'
-        elif symbol == '>':
-            addString = '&gt'
-        elif symbol == '&':
-            addString = '&amp'
-        else:
-            addString = ''
-        self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+        self.compileSymbol()
         self.inputFile.advance()
         self.compileSubroutineBody()
         self.outputFile.write(' ' * self.spacesIndented + '</subroutineDec>\n')
@@ -142,23 +88,14 @@ class CompilationEngine:
 
         while self.inputFile.tokenType() != "SYMBOL":
             if self.inputFile.tokenType() == 'IDENTIFIER':
-                self.outputFile.write(' ' * self.spacesIndented + '<identifier> ' + self.inputFile.identifier() + ' </identifier>\n')
+                self.compileIdentifier()
             elif self.inputFile.tokenType() == 'KEYWORD':
-                self.outputFile.write(' ' * self.spacesIndented + '<keyword> ' + self.inputFile.keyWord() + ' </keyword>\n')
+                self.compileKeyword()
             self.inputFile.advance()
-            self.outputFile.write(' ' * self.spacesIndented + '<identifier> ' + self.inputFile.identifier() + ' </identifier>\n')
+            self.compileIdentifier()
             self.inputFile.advance()
             if self.inputFile.symbol() == ',':
-                symbol = self.inputFile.symbol()
-                if symbol == '<':
-                    addString = '&lt'
-                elif symbol == '>':
-                    addString = '&gt'
-                elif symbol == '&':
-                    addString = '&amp'
-                else:
-                    addString = ''
-                self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+                self.compileSymbol()
                 self.inputFile.advance()
 
             self.spacesIndented -= 1
@@ -167,76 +104,38 @@ class CompilationEngine:
     def compileSubroutineBody(self):
         self.outputFile.write(' ' * self.spacesIndented + '<subroutineBody>\n')
         self.spacesIndented += 1
-        symbol = self.inputFile.symbol()
-        if symbol == '<':
-            addString = '&lt'
-        elif symbol == '>':
-            addString = '&gt'
-        elif symbol == '&':
-            addString = '&amp'
-        else:
-            addString = ''
-        self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+        self.compileSymbol()
         self.inputFile.advance()
 
         while self.inputFile.keyWord() == 'var':
             self.compileVarDec()
 
         self.compileStatements()
-        symbol = self.inputFile.symbol()
-        if symbol == '<':
-            addString = '&lt'
-        elif symbol == '>':
-            addString = '&gt'
-        elif symbol == '&':
-            addString = '&amp'
-        else:
-            addString = ''
-        self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+        self.compileSymbol()
         self.spacesIndented -= 1
         self.outputFile.write(' ' * self.spacesIndented + '</subroutineBody>\n')
 
     def compileVarDec(self):
         self.outputFile.write(' ' * self.spacesIndented + '<varDec>\n')
         self.spacesIndented += 1
-        self.outputFile.write(' ' * self.spacesIndented + '<keyword> ' + self.inputFile.keyWord() + ' </keyword>\n')
+        self.compileKeyword()
         self.inputFile.advance()
         if self.inputFile.tokenType() == 'KEYWORD':
-            self.outputFile.write(' ' * self.spacesIndented + '<keyword> ' + self.inputFile.keyWord() + ' </keyword>\n')
+            self.compileKeyword()
         elif self.inputFile.tokenType() == 'IDENTIFIER':
-            self.outputFile.write(
-                ' ' * self.spacesIndented + '<identifier> ' + self.inputFile.identifier() + ' </identifier>\n')
+            self.compileIdentifier()
 
         self.inputFile.advance()
-        self.outputFile.write(
-            ' ' * self.spacesIndented + '<identifier> ' + self.inputFile.identifier() + ' </identifier>\n')
+        self.compileIdentifier()
         self.inputFile.advance()
 
         while self.inputFile.symbol() == ',':
-            symbol = self.inputFile.symbol()
-            if symbol == '<':
-                addString = '&lt'
-            elif symbol == '>':
-                addString = '&gt'
-            elif symbol == '&':
-                addString = '&amp'
-            else:
-                addString = ''
-            self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+            self.compileSymbol()
             self.inputFile.advance()
-            self.outputFile.write(' ' * self.spacesIndented + '<identifier> ' + self.inputFile.identifier() + ' </identifier>\n')
+            self.compileIdentifier()
             self.inputFile.advance()
 
-        symbol = self.inputFile.symbol()
-        if symbol == '<':
-            addString = '&lt'
-        elif symbol == '>':
-            addString = '&gt'
-        elif symbol == '&':
-            addString = '&amp'
-        else:
-            addString = ''
-        self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+        self.compileSymbol()
 
         self.inputFile.advance()
         self.spacesIndented -= 1
@@ -264,58 +163,22 @@ class CompilationEngine:
     def compileLet(self):
         self.outputFile.write(' ' * self.spacesIndented + '<letStatement>\n')
         self.spacesIndented += 1
-        self.outputFile.write(' ' * self.spacesIndented + '<keyword> ' + self.inputFile.keyWord() + ' </keyword>\n')
+        self.compileKeyword()
         self.inputFile.advance()
-        self.outputFile.write(' ' * self.spacesIndented + '<identifier> ' + self.inputFile.identifier() + ' </identifier>\n')
+        self.compileIdentifier()
         self.inputFile.advance()
 
         if self.inputFile.symbol() == '[':
-            symbol = self.inputFile.symbol()
-            if symbol == '<':
-                addString = '&lt'
-            elif symbol == '>':
-                addString = '&gt'
-            elif symbol == '&':
-                addString = '&amp'
-            else:
-                addString = ''
-            self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+            self.compileSymbol()
             self.inputFile.advance()
             self.CompileExpression()
-            symbol = self.inputFile.symbol()
-            if symbol == '<':
-                addString = '&lt'
-            elif symbol == '>':
-                addString = '&gt'
-            elif symbol == '&':
-                addString = '&amp'
-            else:
-                addString = ''
-            self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+            self.compileSymbol()
             self.inputFile.advance()
 
-        symbol = self.inputFile.symbol()
-        if symbol == '<':
-            addString = '&lt'
-        elif symbol == '>':
-            addString = '&gt'
-        elif symbol == '&':
-            addString = '&amp'
-        else:
-            addString = ''
-        self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+        self.compileSymbol()
         self.inputFile.advance()
         self.CompileExpression()
-        symbol = self.inputFile.symbol()
-        if symbol == '<':
-            addString = '&lt'
-        elif symbol == '>':
-            addString = '&gt'
-        elif symbol == '&':
-            addString = '&amp'
-        else:
-            addString = ''
-        self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+        self.compileSymbol()
         self.spacesIndented -= 1
 
         self.outputFile.write(' ' * self.spacesIndented + '</letStatement>\n')
@@ -324,80 +187,26 @@ class CompilationEngine:
     def compileIf(self):
         self.outputFile.write(' ' * self.spacesIndented + '<ifStatement>\n')
         self.spacesIndented += 1
-        self.outputFile.write(' ' * self.spacesIndented + '<keyword> ' + self.inputFile.keyWord() + ' </keyword>\n')
+        self.compileKeyword()
         self.inputFile.advance()
-        symbol = self.inputFile.symbol()
-        if symbol == '<':
-            addString = '&lt'
-        elif symbol == '>':
-            addString = '&gt'
-        elif symbol == '&':
-            addString = '&amp'
-        else:
-            addString = ''
-        self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+        self.compileSymbol()
         self.inputFile.advance()
         self.CompileExpression()
-        symbol = self.inputFile.symbol()
-        if symbol == '<':
-            addString = '&lt'
-        elif symbol == '>':
-            addString = '&gt'
-        elif symbol == '&':
-            addString = '&amp'
-        else:
-            addString = ''
-        self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+        self.compileSymbol()
         self.inputFile.advance()
-        symbol = self.inputFile.symbol()
-        if symbol == '<':
-            addString = '&lt'
-        elif symbol == '>':
-            addString = '&gt'
-        elif symbol == '&':
-            addString = '&amp'
-        else:
-            addString = ''
-        self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+        self.compileSymbol()
         self.inputFile.advance()
         self.compileStatements()
-        symbol = self.inputFile.symbol()
-        if symbol == '<':
-            addString = '&lt'
-        elif symbol == '>':
-            addString = '&gt'
-        elif symbol == '&':
-            addString = '&amp'
-        else:
-            addString = ''
-        self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+        self.compileSymbol()
         self.inputFile.advance()
 
         if self.inputFile.tokenType() == 'KEYWORD' and self.inputFile.keyWord() == 'else':
-            self.outputFile.write(' ' * self.spacesIndented + '<keyword> ' + self.inputFile.keyWord() + ' </keyword>\n')
+            self.compileKeyword()
             self.inputFile.advance()
-            symbol = self.inputFile.symbol()
-            if symbol == '<':
-                addString = '&lt'
-            elif symbol == '>':
-                addString = '&gt'
-            elif symbol == '&':
-                addString = '&amp'
-            else:
-                addString = ''
-            self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+            self.compileSymbol()
             self.inputFile.advance()
             self.compileStatements()
-            symbol = self.inputFile.symbol()
-            if symbol == '<':
-                addString = '&lt'
-            elif symbol == '>':
-                addString = '&gt'
-            elif symbol == '&':
-                addString = '&amp'
-            else:
-                addString = ''
-            self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+            self.compileSymbol()
             self.inputFile.advance()
 
         self.spacesIndented -= 1
@@ -406,53 +215,17 @@ class CompilationEngine:
     def compileWhile(self):
         self.outputFile.write(' ' * self.spacesIndented + '<whileStatement>\n')
         self.spacesIndented += 1
-        self.outputFile.write(' ' * self.spacesIndented + '<keyword> ' + self.inputFile.keyWord() + ' </keyword>\n')
+        self.compileKeyword()
         self.inputFile.advance()
-        symbol = self.inputFile.symbol()
-        if symbol == '<':
-            addString = '&lt'
-        elif symbol == '>':
-            addString = '&gt'
-        elif symbol == '&':
-            addString = '&amp'
-        else:
-            addString = ''
-        self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+        self.compileSymbol()
         self.inputFile.advance()
         self.CompileExpression()
-        symbol = self.inputFile.symbol()
-        if symbol == '<':
-            addString = '&lt'
-        elif symbol == '>':
-            addString = '&gt'
-        elif symbol == '&':
-            addString = '&amp'
-        else:
-            addString = ''
-        self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+        self.compileSymbol()
         self.inputFile.advance()
-        symbol = self.inputFile.symbol()
-        if symbol == '<':
-            addString = '&lt'
-        elif symbol == '>':
-            addString = '&gt'
-        elif symbol == '&':
-            addString = '&amp'
-        else:
-            addString = ''
-        self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+        self.compileSymbol()
         self.inputFile.advance()
         self.compileStatements()
-        symbol = self.inputFile.symbol()
-        if symbol == '<':
-            addString = '&lt'
-        elif symbol == '>':
-            addString = '&gt'
-        elif symbol == '&':
-            addString = '&amp'
-        else:
-            addString = ''
-        self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+        self.compileSymbol()
 
         self.spacesIndented -= 1
         self.outputFile.write(' ' * self.spacesIndented + '</whileStatement>\n')
@@ -461,59 +234,23 @@ class CompilationEngine:
     def compileDo(self):
         self.outputFile.write(' ' * self.spacesIndented + '<doStatement>\n')
         self.spacesIndented += 1
-        self.outputFile.write(' ' * self.spacesIndented + '<keyword> ' + self.inputFile.keyWord() + ' </keyword>\n')
+        self.compileKeyword()
         self.inputFile.advance()
-        self.outputFile.write(' ' * self.spacesIndented + '<identifier> ' + self.inputFile.identifier() + ' </identifier>\n')
+        self.compileIdentifier()
         self.inputFile.advance()
 
         if self.inputFile.symbol() == '.':
-            symbol = self.inputFile.symbol()
-            if symbol == '<':
-                addString = '&lt'
-            elif symbol == '>':
-                addString = '&gt'
-            elif symbol == '&':
-                addString = '&amp'
-            else:
-                addString = ''
-            self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+            self.compileSymbol()
             self.inputFile.advance()
-            self.outputFile.write(' ' * self.spacesIndented + '<identifier> ' + self.inputFile.identifier() + ' </identifier>\n')
+            self.compileIdentifier()
             self.inputFile.advance()
 
-        symbol = self.inputFile.symbol()
-        if symbol == '<':
-            addString = '&lt'
-        elif symbol == '>':
-            addString = '&gt'
-        elif symbol == '&':
-            addString = '&amp'
-        else:
-            addString = ''
-        self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+        self.compileSymbol()
         self.inputFile.advance()
         self.CompileExpressionList()
-        symbol = self.inputFile.symbol()
-        if symbol == '<':
-            addString = '&lt'
-        elif symbol == '>':
-            addString = '&gt'
-        elif symbol == '&':
-            addString = '&amp'
-        else:
-            addString = ''
-        self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+        self.compileSymbol()
         self.inputFile.advance()
-        symbol = self.inputFile.symbol()
-        if symbol == '<':
-            addString = '&lt'
-        elif symbol == '>':
-            addString = '&gt'
-        elif symbol == '&':
-            addString = '&amp'
-        else:
-            addString = ''
-        self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+        self.compileSymbol()
 
         self.spacesIndented -= 1
         self.outputFile.write(' ' * self.spacesIndented + '</doStatement>\n')
@@ -522,12 +259,19 @@ class CompilationEngine:
     def compileReturn(self):
         self.outputFile.write(' ' * self.spacesIndented + '<returnStatement>\n')
         self.spacesIndented += 1
-        self.outputFile.write(' ' * self.spacesIndented + '<keyword> ' + self.inputFile.keyWord() + ' </keyword>\n')
+        self.compileKeyword()
         self.inputFile.advance()
 
         if self.inputFile.tokenType() != 'SYMBOL' and self.inputFile.symbol() != ';':
             self.CompileExpression()
 
+        self.compileSymbol()
+
+        self.spacesIndented -= 1
+        self.outputFile.write(' ' * self.spacesIndented + '</returnStatement>\n')
+        self.inputFile.advance()
+
+    def compileSymbol(self):
         symbol = self.inputFile.symbol()
         if symbol == '<':
             addString = '&lt'
@@ -539,9 +283,11 @@ class CompilationEngine:
             addString = ''
         self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
 
-        self.spacesIndented -= 1
-        self.outputFile.write(' ' * self.spacesIndented + '</returnStatement>\n')
-        self.inputFile.advance()
+    def compileIdentifier(self):
+        self.outputFile.write(' ' * self.spacesIndented + '<identifier> ' + self.inputFile.identifier() + ' </identifier>\n')
+
+    def compileKeyword(self):
+        self.outputFile.write(' ' * self.spacesIndented + '<keyword> ' + self.inputFile.keyWord() + ' </keyword>\n')
 
     def CompileExpression(self):
         self.outputFile.write(' ' * self.spacesIndented + '<expression>\n')
@@ -549,16 +295,7 @@ class CompilationEngine:
         self.CompileTerm()
 
         while self.inputFile.tokenType() == 'SYMBOL' and self.inputFile.symbol() in ['=', '+', '-', '*', '/', '&', '|', '>', '<']:
-            symbol = self.inputFile.symbol()
-            if symbol == '<':
-                addString = '&lt'
-            elif symbol == '>':
-                addString = '&gt'
-            elif symbol == '&':
-                addString = '&amp'
-            else:
-                addString = ''
-            self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
+            self.compileSymbol()
             self.inputFile.advance()
             self.CompileTerm()
 
@@ -569,4 +306,7 @@ class CompilationEngine:
         pass
 
     def CompileExpressionList(self):
-        pass
+        self.outputFile.write(' ' * self.spacesIndented + '<term>\n')
+        self.spacesIndented += 1
+
+        if self.inputFile.peek()

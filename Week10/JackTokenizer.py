@@ -11,14 +11,13 @@ symbols = {'{', '}', '(', ')', '[', ']', '|', '.', ',', ';', '+', '-', '*', '/',
 class JackTokenizer:
 
     def __init__(self, inputFile):
-        self.inputFile = open(inputFile, 'r').read()
-        self.cleanup()
+        file = open(inputFile, 'r+')
+        self.input = file.read()
+        self.input = ' '.join(re.sub(r'(?:(\/\*(.|\n)*?\*\/)|(//.*))', '', self.input).split())
+        print(self.input.split(';'))
         self.currentToken = None
-        self.tokens = [x for x in re.split(r'([\{\}\(\)\[\]\.\,\;\+\-\*\/\&\<\>\=\~\|]|(?:"[^"]*")| *)', self.inputFile)
+        self.tokens = [x for x in re.split(r'([\{\}\(\)\[\]\,\;\=\.\+\-\*\/\&\|\~\<\>]|(?:"[^"]*")| *)', self.input)
                        if x not in (' ', '')]
-
-    def cleanup(self):
-        self.inputFile = ''.join(re.sub(r'(?:(\/\*(.|\n)*?\*\/)|(//.*))', '', self.inputFile))
 
     def hasMoreTokens(self):
         if len(self.tokens) > 0:
@@ -56,5 +55,13 @@ class JackTokenizer:
     def stringVal(self):
         return self.currentToken[1:-1]
 
+    def peek(self):
+        return self.tokens[0]
 
 
+
+if __name__ == "__main__":
+    a = JackTokenizer("Square.jack")
+    while a.hasMoreTokens():
+        a.advance()
+        print(a.keyWord())
