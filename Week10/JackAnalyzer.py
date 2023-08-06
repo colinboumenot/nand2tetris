@@ -3,23 +3,19 @@ import JackTokenizer
 import CompilationEngine
 
 def main():
-    inputFiles = []
     userInput = input('Input File or Directory Name: ')
-    if os.path.idsdir(userInput):
-        if userInput.endswith('/'):
-            userInput = userInput[:-1]
-        os.chdir(userInput)
-        for file in os.listdir('.'):
+    if os.path.isdir(userInput):
+        if not userInput.endswith('/'):
+            userInput += '/'
+        files = os.listdir(userInput)
+        for file in files:
             if file.endswith('.jack'):
-                inputFiles.append(file)
+                fileName = file.split('.')[0]
+                compiler = CompilationEngine.CompilationEngine(userInput + file, userInput + fileName + '.xmla')
+                compiler.CompileClass()
     elif os.path.isfile(userInput):
-        inputFiles = [userInput]
-
-    for file in inputFiles:
-        inputFile = file.split('/')[-1].split('.')[0]
-        outputFile = inputFile + '.xml'
-        tokenizer = JackTokenizer(inputFile)
-        compiler = CompilationEngine(tokenizer, outputFile)
+        userInput = userInput.split('.')[0]
+        compiler = CompilationEngine.CompilationEngine(userInput + '.jack', userInput + '.xmla')
         compiler.CompileClass()
 
 if __name__ == '__main__':

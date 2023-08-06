@@ -1,3 +1,4 @@
+import JackTokenizer
 class CompilationEngine:
 
     keywords = {'class', 'constructor', 'function', 'method', 'field', 'static',
@@ -7,7 +8,7 @@ class CompilationEngine:
                '&', '<', '>', '=', '~',}
 
     def __init__(self, inputFile, outputFile):
-        self.inputFile = inputFile
+        self.inputFile = JackTokenizer.JackTokenizer(inputFile)
         self.outputFile = open(outputFile, 'w+')
         self.spacesIndented = 0
 
@@ -24,7 +25,7 @@ class CompilationEngine:
             self.inputFile.advance()
             while self.inputFile.keyWord() in ['static', 'field']:
                 self.CompileClassVarDec()
-            while self.inputFile.keyWord in ['constructor', 'function', 'method']:
+            while self.inputFile.keyWord() in ['constructor', 'function', 'method']:
                 self.CompileSubroutineDec()
             self.compileSymbol()
             self.spacesIndented -= 1
@@ -98,8 +99,8 @@ class CompilationEngine:
                 self.compileSymbol()
                 self.inputFile.advance()
 
-            self.spacesIndented -= 1
-            self.outputFile.write(' ' * self.spacesIndented + '</parameterList>\n')
+        self.spacesIndented -= 1
+        self.outputFile.write(' ' * self.spacesIndented + '</parameterList>\n')
 
     def compileSubroutineBody(self):
         self.outputFile.write(' ' * self.spacesIndented + '<subroutineBody>\n')
@@ -274,13 +275,13 @@ class CompilationEngine:
     def compileSymbol(self):
         symbol = self.inputFile.symbol()
         if symbol == '<':
-            addString = '&lt'
+            addString = '&lt;'
         elif symbol == '>':
-            addString = '&gt'
+            addString = '&gt;'
         elif symbol == '&':
-            addString = '&amp'
+            addString = '&amp;'
         else:
-            addString = ''
+            addString = self.inputFile.symbol()
         self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
 
     def compileIdentifier(self):
@@ -303,10 +304,73 @@ class CompilationEngine:
         self.outputFile.write(' ' * self.spacesIndented + '</expression>\n')
 
     def CompileTerm(self):
-        pass
-
-    def CompileExpressionList(self):
         self.outputFile.write(' ' * self.spacesIndented + '<term>\n')
         self.spacesIndented += 1
+        move = True
+        if self.inputFile.tokenType() == 'INT_CONST':
+            self.outputFile.write(' ' * self.spacesIndented + '<integerConstant> ' + self.inputFile.identifier() + '</integerConstant>\n')
+        elif self.inputFile.tokenType() == 'STRING_CONST':
+            self.outputFile.write(' ' * self.spacesIndented + '<stringConstant> ' + self.inputFile.stringVal() + '</stringConstant>\n')
+        elif self.inputFile.tokenType() == 'KEYWORD':
+            self.compileKeyword()
+        elif self.inputFile.tokenType() == 'IDENTIFIER':
+            move = False
+            self.compileIdentifier()
+            self.inputFile.advance()
+            if self.inputFile.symbol() == '[':
+                move = True
+                self.compileSymbol()
+                self.inputFile.advance()
+                self.CompileExpression()
+                self.compileSymbol()
+            elif self.inputFile.symbol() == '.':
+                move = True
+                self.compileSymbol()
+                self.inputFile.advance()
+                self.compileIdentifier()
+                self.inputFile.advance()
+                self.compileSymbol()
+                self.inputFile.advance()
+                self.CompileExpressionList()
+                self.compileSymbol()
+            elif self.inputFile.symbol() == '(':
+                move = True
+                self.compileSymbol()
+                self.inputFile.advance()
+                self.CompileExpressionList()
+                self.compileSymbol()
+        elif self.inputFile.symbol() == '(':
+            self.compileSymbol()
+            self.inputFile.advance()
+            self.CompileExpression()
+            self.compileSymbol()
+        elif self.inputFile.symbol() in ['~', '-']:
+            self.compileSymbol()
+            self.inputFile.advance()
+            self.CompileTerm()
+            move = False
 
-        if self.inputFile.peek()
+        if move:
+            self.inputFile.advance()
+
+        self.spacesIndented -= 1
+        self.outputFile.write(' ' * self.spacesIndented + '</term>\n')
+    def CompileExpressionList(self):
+        self.outputFile.write(' ' * self.spacesIndented + '<expressionList>\n')
+        self.spacesIndented += 1
+
+        if self.inputFile.tokenType() != 'SYMBOL' and self.inputFile.symbol() != ')':
+            self.CompileExpression()
+            while self.inputFile.tokenType() == 'SYMBOL' and self.inputFile.symbol() == ',':
+                self.compileSymbol()
+                self.inputFile.advance()
+                self.CompileExpression()
+        if self.inputFile.symbol() == '(':
+            self.CompileExpression()
+            while self.inputFile.tokenType() == 'SYMBOL' and self.inputFile.symbol() == ',':
+                self.compileSymbol()
+                self.inputFile.advance()
+                self.CompileExpression()
+
+        self.spacesIndented -= 1
+        self.outputFile.write(' ' * self.spacesIndented + '</expressionList>\n')
