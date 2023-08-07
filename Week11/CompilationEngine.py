@@ -4,38 +4,36 @@ class CompilationEngine:
 
     keywords = {'class', 'constructor', 'function', 'method', 'field', 'static',
                 'var', 'int', 'char', 'boolean', 'void', 'true', 'false', 'null',
-                'this', 'let', 'do', 'if', 'else', 'while', 'return',}
+                'this', 'let', 'do', 'if', 'else', 'while', 'return'}
     symbols = {'{', '}', '(', ')', '[', ']', '|', '.', ',', ';', '+', '-', '*', '/',
-               '&', '<', '>', '=', '~',}
+               '&', '<', '>', '=', '~'}
 
     def __init__(self, inputFile, outputFile):
         self.inputFile = JackTokenizer.JackTokenizer(inputFile)
-        self.outputFile = open(outputFile, 'w+')
+        self.outputFile = outputFile
         self.symbolTable = SymbolTable()
-        self.spacesIndented = 0
+        self.className = None
+        self.subName = None
+        self.ifCounter = 0
+        self.whileCounter = 0
+        self.let = 0
 
     def CompileClass(self):
-        if self.inputFile.hasMoreTokens():
+        self.inputFile.advance()
+        self.inputFile.advance()
+        self.className = self.inputFile.currentToken
+        self.inputFile.advance()
+        self.inputFile.advance()
+
+        if self.inputFile.currentToken in ['static', 'field']:
+            self.CompileClassVarDec()
+        while self.inputFile.currentToken in ['constructor', 'method', 'function']:
+            self.CompileSubroutineDec()
             self.inputFile.advance()
-            self.outputFile.write('<class>\n')
-            self.spacesIndented += 1
-            self.compileKeyword()
-            self.inputFile.advance()
-            self.compileIdentifier()
-            self.inputFile.advance()
-            self.compileSymbol()
-            self.inputFile.advance()
-            while self.inputFile.keyWord() in ['static', 'field']:
-                self.CompileClassVarDec()
-            while self.inputFile.keyWord() in ['constructor', 'function', 'method']:
-                self.CompileSubroutineDec()
-            self.compileSymbol()
-            self.spacesIndented -= 1
-            self.outputFile.write('</class>\n')
-            self.outputFile.close()
+        self.outputFile.close()
 
     def CompileClassVarDec(self):
-        while self.inputFile.currentToken in ['static, field']:
+        while self.inputFile.currentToken in ['static', 'field']:
             kind = self.inputFile.currentToken
             self.inputFile.advance()
             type = self.inputFile.currentToken
@@ -53,325 +51,314 @@ class CompilationEngine:
 
 
     def CompileSubroutineDec(self):
-        self.outputFile.write(' ' * self.spacesIndented + '<subroutineDec>\n')
-        self.spacesIndented += 1
-        self.compileKeyword()
+        subroutineType = self.inputFile.currentToken
         self.inputFile.advance()
+        self.inputFile.advance()
+        self.subName = self.className + '.' + self.inputFile.currentToken
+        self.inputFile.advance()
+        self.symbolTable.startSubroutine()
+        self.compileParameterList(subroutineType)
+        self.inputFile.advance()
+        self.compileSubroutineBody(subroutineType)
 
-        if self.inputFile.tokenType() == 'KEYWORD':
-            self.compileKeyword()
-        elif self.inputFile.tokenType() == 'IDENTIFIER':
-            self.compileIdentifier()
-        self.inputFile.advance()
 
-        self.compileIdentifier()
+    def compileParameterList(self, subroutineType):
+        if subroutineType == 'method':
+            self.symbolTable.define('this', 'self', 'arg')
         self.inputFile.advance()
-        self.compileSymbol()
-        self.inputFile.advance()
-
-        self.compileParameterList()
-        self.compileSymbol()
-        self.inputFile.advance()
-        self.compileSubroutineBody()
-        self.outputFile.write(' ' * self.spacesIndented + '</subroutineDec>\n')
-        self.inputFile.advance()
-
-    def compileParameterList(self):
-        self.outputFile.write(' ' * self.spacesIndented + '<parameterList>\n')
-        self.spacesIndented += 1
-
-        while self.inputFile.tokenType() != "SYMBOL":
-            if self.inputFile.tokenType() == 'IDENTIFIER':
-                self.compileIdentifier()
-            elif self.inputFile.tokenType() == 'KEYWORD':
-                self.compileKeyword()
+        while self.inputFile.tokenType() != 'SYMBOL':
+            type = self.inputFile.currentToken
             self.inputFile.advance()
-            self.compileIdentifier()
+            name = self.inputFile.currentToken
+            self.symbolTable.define(name, type, 'arg')
             self.inputFile.advance()
-            if self.inputFile.symbol() == ',':
-                self.compileSymbol()
+            if self.inputFile.currentToken == ',':
                 self.inputFile.advance()
 
-        self.spacesIndented -= 1
-        self.outputFile.write(' ' * self.spacesIndented + '</parameterList>\n')
-
-    def compileSubroutineBody(self):
-        self.outputFile.write(' ' * self.spacesIndented + '<subroutineBody>\n')
-        self.spacesIndented += 1
-        self.compileSymbol()
+    def compileSubroutineBody(self,  subroutineType):
         self.inputFile.advance()
-
-        while self.inputFile.keyWord() == 'var':
+        while self.inputFile.currentToken == 'var':
             self.compileVarDec()
-
+        nVars = self.symbolTable.VarCount('var')
+        self.outputFile.writeFunction(self.subName, nVars)
+        if subroutineType == 'method':
+            self.outputFile.writePush('argument', 0)
+            self.outputFile.writePop('pointer', 0)
+        if subroutineType == 'constructor':
+            fieldCount = self.symbolTable.VarCount('FIELD')
+            self.outputFile.writePush('constant', fieldCount)
+            self.outputFile.writeCall('Memory.alloc', 1)
+            self.outputFile.writePop('pointer', 0)
         self.compileStatements()
-        self.compileSymbol()
-        self.spacesIndented -= 1
-        self.outputFile.write(' ' * self.spacesIndented + '</subroutineBody>\n')
+        self.inputFile.advance()
 
     def compileVarDec(self):
-        self.outputFile.write(' ' * self.spacesIndented + '<varDec>\n')
-        self.spacesIndented += 1
-        self.compileKeyword()
+        kind = self.inputFile.currentToken
         self.inputFile.advance()
-        if self.inputFile.tokenType() == 'KEYWORD':
-            self.compileKeyword()
-        elif self.inputFile.tokenType() == 'IDENTIFIER':
-            self.compileIdentifier()
-
+        type = self.inputFile.currentToken
         self.inputFile.advance()
-        self.compileIdentifier()
+        name = self.inputFile.currentToken
         self.inputFile.advance()
-
-        while self.inputFile.symbol() == ',':
-            self.compileSymbol()
+        self.symbolTable.define(name, type, kind)
+        while self.inputFile.currentToken == ',':
             self.inputFile.advance()
-            self.compileIdentifier()
+            name = self.inputFile.currentToken
+            self.symbolTable.define(name, type, kind)
             self.inputFile.advance()
-
-        self.compileSymbol()
-
         self.inputFile.advance()
-        self.spacesIndented -= 1
-        self.outputFile.write(' ' * self.spacesIndented + '</varDec>\n')
 
     def compileStatements(self):
-        self.outputFile.write(' ' * self.spacesIndented + '<statements>\n')
-        self.spacesIndented += 1
-
-        while self.inputFile.tokenType() == 'KEYWORD':
-            if self.inputFile.keyWord() == 'return':
-                self.compileReturn()
-            elif self.inputFile.keyWord() == 'if':
-                self.compileIf()
-            elif self.inputFile.keyWord() == 'do':
-                self.compileDo()
-            elif self.inputFile.keyWord() == 'let':
+        while self.inputFile.currentToken in ['let', 'if', 'while', 'do', 'return']:
+            if self.inputFile.currentToken == 'let':
                 self.compileLet()
-            elif self.inputFile.keyWord() == 'while':
+            elif self.inputFile.currentToken == 'if':
+                self.compileIf()
+            elif self.inputFile.currentToken == 'while':
                 self.compileWhile()
-
-        self.spacesIndented -= 1
-        self.outputFile.write(' ' * self.spacesIndented + '</statements>\n')
+            elif self.inputFile.currentToken == 'do':
+                self.compileDo()
+            elif self.inputFile.currentToken == 'return':
+                self.compileReturn()
 
     def compileLet(self):
-        self.outputFile.write(' ' * self.spacesIndented + '<letStatement>\n')
-        self.spacesIndented += 1
-        self.compileKeyword()
         self.inputFile.advance()
-        self.compileIdentifier()
+        arrayPresent = False
+        name = self.inputFile.currentToken
         self.inputFile.advance()
-
-        if self.inputFile.symbol() == '[':
-            self.compileSymbol()
-            self.inputFile.advance()
-            self.CompileExpression()
-            self.compileSymbol()
-            self.inputFile.advance()
-
-        self.compileSymbol()
+        if self.inputFile.currentToken == '[':
+            arrayPresent = True
+            self.compileArray()
         self.inputFile.advance()
         self.CompileExpression()
-        self.compileSymbol()
-        self.spacesIndented -= 1
-
-        self.outputFile.write(' ' * self.spacesIndented + '</letStatement>\n')
-        self.inputFile.advance()
-
+        if arrayPresent:
+            self.outputFile.writePop('temp', 0)
+            self.outputFile.writePop('pointer', 1)
+            self.outputFile.writePush('temp', 0)
+            self.outputFile.writePop('that', 0)
+        else:
+            if self.symbolTable.KindOf(name) != 'None':
+                if self.symbolTable.KindOf(name) == 'VAR':
+                    self.outputFile.writePop('local', self.symbolTable.IndexOf(name))
+                elif self.symbolTable.KindOf(name) == 'ARG':
+                    self.outputFile.writePop('argument', self.symbolTable.IndexOf(name))
+                elif self.symbolTable.KindOf(name) == 'STATIC':
+                    self.outputFile.writePop('static', self.symbolTable.IndexOf(name))
+                else:
+                    self.outputFile.writePop('this', self.symbolTable.IndexOf(name))
+        if self.inputFile.currentToken == ';':
+            self.inputFile.advance()
     def compileIf(self):
-        self.outputFile.write(' ' * self.spacesIndented + '<ifStatement>\n')
-        self.spacesIndented += 1
-        self.compileKeyword()
         self.inputFile.advance()
-        self.compileSymbol()
         self.inputFile.advance()
         self.CompileExpression()
-        self.compileSymbol()
         self.inputFile.advance()
-        self.compileSymbol()
+        self.outputFile.WriteIf('IF_TRUE' + str(self.ifCounter))
+        self.outputFile.WriteGoto('IF_FALSE' + str(self.ifCounter))
+        self.outputFile.WriteLabel('IF_TRUE' + str(self.ifCounter))
         self.inputFile.advance()
         self.compileStatements()
-        self.compileSymbol()
         self.inputFile.advance()
-
-        if self.inputFile.tokenType() == 'KEYWORD' and self.inputFile.keyWord() == 'else':
-            self.compileKeyword()
+        if self.inputFile.currentToken == 'else':
+            self.outputFile.WriteGoto('IF_END' + str(self.ifCounter))
+            self.outputFile.WriteLabel('IF_FALSE' + str(self.ifCounter))
             self.inputFile.advance()
-            self.compileSymbol()
             self.inputFile.advance()
             self.compileStatements()
-            self.compileSymbol()
             self.inputFile.advance()
+            self.outputFile.WriteLabel('IF_END' + str(self.ifCounter))
+        else:
+            self.outputFile.WriteLabel('IF_FALSE', str(self.ifCounter))
+        self.ifCounter += 1
 
-        self.spacesIndented -= 1
-        self.outputFile.write(' ' * self.spacesIndented + '</ifStatement>\n'
-                              )
     def compileWhile(self):
-        self.outputFile.write(' ' * self.spacesIndented + '<whileStatement>\n')
-        self.spacesIndented += 1
-        self.compileKeyword()
+        self.outputFile.WriteLabel('WHILE_START' + str(self.whileCounter))
         self.inputFile.advance()
-        self.compileSymbol()
         self.inputFile.advance()
         self.CompileExpression()
-        self.compileSymbol()
+        self.outputFile.writeArithmetic('not')
+        self.outputFile.WriteIf('WHILE_END' + str(self.whileCounter))
         self.inputFile.advance()
-        self.compileSymbol()
         self.inputFile.advance()
         self.compileStatements()
-        self.compileSymbol()
-
-        self.spacesIndented -= 1
-        self.outputFile.write(' ' * self.spacesIndented + '</whileStatement>\n')
-        self.inputFile.advance()
+        self.outputFile.WriteGoto('WHILE_START' + str(self.whileCounter))
+        self.outputFile.WriteLabel('WHILE_END' + str(self.whileCounter))
+        if self.inputFile.currentToken == '}':
+            self.inputFile.advance()
+        self.whileCounter += 1
 
     def compileDo(self):
-        self.outputFile.write(' ' * self.spacesIndented + '<doStatement>\n')
-        self.spacesIndented += 1
-        self.compileKeyword()
         self.inputFile.advance()
-        self.compileIdentifier()
+        nLocals = 0
+        name = self.inputFile.currentToken
         self.inputFile.advance()
-
-        if self.inputFile.symbol() == '.':
-            self.compileSymbol()
+        if self.inputFile.currentToken == '.':
             self.inputFile.advance()
-            self.compileIdentifier()
-            self.inputFile.advance()
-
-        self.compileSymbol()
+            functionName = self.inputFile.currentToken
+            if self.symbolTable.KindOf(name) != 'None':
+                if self.symbolTable.KindOf(name) == 'VAR':
+                    self.outputFile.writePush('local', self.symbolTable.IndexOf(name))
+                elif self.symbolTable.KindOf(name) == 'ARG':
+                    self.outputFile.writePush('argument', self.symbolTable.IndexOf(name))
+                elif self.symbolTable.KindOf(name) == 'STATIC':
+                    self.outputFile.writePush('static', self.symbolTable.IndexOf(name))
+                else:
+                    self.outputFile.writePush('this', self.symbolTable.IndexOf(name))
+                finalName = self.symbolTable.TypeOf(name) + '.' + functionName
+                nLocals += 1
+            else:
+                finalName = name + '.' + functionName
+        else:
+            self.outputFile.writePush('pointer', 0)
+            nLocals += 1
+            finalName = self.className + '.' + name
         self.inputFile.advance()
-        self.CompileExpressionList()
-        self.compileSymbol()
+        nLocals += self.CompileExpressionList()
+        self.outputFile.writeCall(finalName, nLocals)
         self.inputFile.advance()
-        self.compileSymbol()
-
-        self.spacesIndented -= 1
-        self.outputFile.write(' ' * self.spacesIndented + '</doStatement>\n')
+        self.outputFile.writePop('temp', 0)
         self.inputFile.advance()
 
     def compileReturn(self):
-        self.outputFile.write(' ' * self.spacesIndented + '<returnStatement>\n')
-        self.spacesIndented += 1
-        self.compileKeyword()
         self.inputFile.advance()
-
-        if self.inputFile.tokenType() != 'SYMBOL' and self.inputFile.symbol() != ';':
+        empty = True
+        while self.inputFile.currentToken in ['-', '~', 'true', 'false', 'null', 'this'] or self.inputFile.tokenType in ['INT_CONST', 'STRING_CONST', 'IDENTIFIER']:
+            empty = False
             self.CompileExpression()
-
-        self.compileSymbol()
-
-        self.spacesIndented -= 1
-        self.outputFile.write(' ' * self.spacesIndented + '</returnStatement>\n')
+        if empty:
+            self.outputFile.writePush('constant', 0)
+        self.outputFile.writeReturn()
         self.inputFile.advance()
 
-    def compileSymbol(self):
-        symbol = self.inputFile.symbol()
-        if symbol == '<':
-            addString = '&lt;'
-        elif symbol == '>':
-            addString = '&gt;'
-        elif symbol == '&':
-            addString = '&amp;'
-        else:
-            addString = self.inputFile.symbol()
-        self.outputFile.write(' ' * self.spacesIndented + '<symbol> ' + addString + ' </symbol>\n')
-
-    def compileIdentifier(self):
-        self.outputFile.write(' ' * self.spacesIndented + '<identifier> ' + self.inputFile.identifier() + ' </identifier>\n')
-
-    def compileKeyword(self):
-        keyword = self.inputFile.keyWord()
-
-        if keyword == 'this':
-            self.outputFile.writePush('pointer', 0)
-        else:
-            self.outputFile.writePush('constant', 0)
-            if keyword == 'true':
-                self.outputFile.writeArithmetic('not')
 
     def CompileExpression(self):
-        self.outputFile.write(' ' * self.spacesIndented + '<expression>\n')
-        self.spacesIndented += 1
         self.CompileTerm()
-
-        while self.inputFile.tokenType() == 'SYMBOL' and self.inputFile.symbol() in ['=', '+', '-', '*', '/', '&', '|', '>', '<']:
-            self.compileSymbol()
+        self.inputFile.advance()
+        while self.inputFile.currentToken in ['+', '-', '*', '/', '|', '=', '<', '>', '&']:
+            operator = self.inputFile.currentToken
             self.inputFile.advance()
             self.CompileTerm()
-
-        self.spacesIndented -= 1
-        self.outputFile.write(' ' * self.spacesIndented + '</expression>\n')
+            if operator == '+':
+                self.outputFile.writeArithmetic('add')
+            elif operator == '-':
+                self.outputFile.writeArithmetic('sub')
+            elif operator == '*':
+                self.outputFile.writeCall('Math.multiply', 2)
+            elif operator == '/':
+                self.outputFile.writeCall('Math.divide', 2)
+            elif operator == '|':
+                self.outputFile.writeArithmetic('or')
+            elif operator == '=':
+                self.outputFile.writeArithmetic('eq')
+            elif operator == '<':
+                self.outputFile.writeArithmetic('lt')
+            elif operator == '>':
+                self.outputFile.writeArithmetic('gt')
+            else:
+                self.outputFile.writeArithmetic('and')
 
     def CompileTerm(self):
-        self.outputFile.write(' ' * self.spacesIndented + '<term>\n')
-        self.spacesIndented += 1
-        move = True
+        arrayPresent = False
         if self.inputFile.tokenType() == 'INT_CONST':
-            self.outputFile.write(' ' * self.spacesIndented + '<integerConstant> ' + self.inputFile.identifier() + '</integerConstant>\n')
+            value = self.inputFile.currentToken
+            self.outputFile.writePush('constant', value)
         elif self.inputFile.tokenType() == 'STRING_CONST':
-            self.outputFile.write(' ' * self.spacesIndented + '<stringConstant> ' + self.inputFile.stringVal() + '</stringConstant>\n')
-        elif self.inputFile.tokenType() == 'KEYWORD':
-            self.compileKeyword()
+            value = self.inputFile.currentToken
+            self.outputFile.writePush('constant', len(value))
+            self.outputFile.writeCall('String.new', 1)
+            for char in value:
+                self.outputFile.writePush('constant', ord(char))
+                self.outputFile.writeCall('String.appendChar', 2)
+        elif self.inputFile.currentToken in ['true', 'false', 'null', 'this']:
+            value = self.inputFile.currentToken
+            if value == 'this':
+                self.outputFile.writePush('pointer', 0)
+            else:
+                self.outputFile.writePush('constant', 0)
+                if value == 'true':
+                    self.outputFile.writeArithmetic('not')
         elif self.inputFile.tokenType() == 'IDENTIFIER':
-            move = False
-            self.compileIdentifier()
+            nLocals = 0
+            name = self.inputFile.currentToken
             self.inputFile.advance()
-            if self.inputFile.symbol() == '[':
-                move = True
-                self.compileSymbol()
+            if self.inputFile.currentToken == '[':
+                arrayPresent = True
+                self.compileArray()
+            if self.inputFile.currentToken == '(':
+                nLocals += 1
+                self.outputFile.writePush('pointer', 0)
                 self.inputFile.advance()
-                self.CompileExpression()
-                self.compileSymbol()
-            elif self.inputFile.symbol() == '.':
-                move = True
-                self.compileSymbol()
+                nLocals += self.CompileExpressionList()
                 self.inputFile.advance()
-                self.compileIdentifier()
+                self.outputFile.writeCall(self.className + '.' + name, nLocals)
+            elif self.inputFile.currentToken == '.':
                 self.inputFile.advance()
-                self.compileSymbol()
+                subroutineName = self.inputFile.currentToken
+                if self.symbolTable.KindOf(subroutineName) != 'None':
+                    if self.symbolTable.KindOf(name) == 'VAR':
+                        self.outputFile.writePush('local', self.symbolTable.IndexOf(name))
+                    elif self.symbolTable.KindOf(name) == 'ARG':
+                        self.outputFile.writePush('argument', self.symbolTable.IndexOf(name))
+                    elif self.symbolTable.KindOf(name) == 'STATIC':
+                        self.outputFile.writePush('static', self.symbolTable.IndexOf(name))
+                    else:
+                        self.outputFile.writePush('this', self.symbolTable.IndexOf(name))
+                    name = self.symbolTable.TypeOf(name) + '.' + subroutineName
+                    nLocals += 1
+                else:
+                    name = name + '.' + subroutineName
                 self.inputFile.advance()
-                self.CompileExpressionList()
-                self.compileSymbol()
-            elif self.inputFile.symbol() == '(':
-                move = True
-                self.compileSymbol()
+                nLocals += self.CompileExpressionList()
                 self.inputFile.advance()
-                self.CompileExpressionList()
-                self.compileSymbol()
-        elif self.inputFile.symbol() == '(':
-            self.compileSymbol()
-            self.inputFile.advance()
-            self.CompileExpression()
-            self.compileSymbol()
-        elif self.inputFile.symbol() in ['~', '-']:
-            self.compileSymbol()
+                self.outputFile.writeCall(name, nLocals)
+            else:
+                if arrayPresent:
+                    self.outputFile.writePop('pointer', 1)
+                    self.outputFile.writePush('that', 0)
+                elif self.symbolTable.KindOf(name) != 'None':
+                    if self.symbolTable.KindOf(name) == 'VAR':
+                        self.outputFile.writePush('local', self.symbolTable.IndexOf(name))
+                    elif self.symbolTable.KindOf(name) == 'ARG':
+                        self.outputFile.writePush('argument', self.symbolTable.IndexOf(name))
+                    elif self.symbolTable.KindOf(name) == 'STATIC':
+                        self.outputFile.writePush('static', self.symbolTable.IndexOf(name))
+                    else:
+                        self.outputFile.writePush('this', self.symbolTable.IndexOf(name))
+        elif self.inputFile.currentToken in ['-', '~']:
+            operator = self.inputFile.currentToken
             self.inputFile.advance()
             self.CompileTerm()
-            move = False
-
-        if move:
+            if operator == '-':
+                self.outputFile.writeArithmetic('neg')
+            else:
+                self.outputFile.writeArithmetic('not')
+        elif self.inputFile.currentToken == '(':
+            self.inputFile.advance()
+            self.CompileExpression()
             self.inputFile.advance()
 
-        self.spacesIndented -= 1
-        self.outputFile.write(' ' * self.spacesIndented + '</term>\n')
+    def compileArray(self, name):
+        self.CompileExpression()
+        self.inputFile.advance()
+        if self.symbolTable.KindOf(name) != 'None':
+            if self.symbolTable.KindOf(name) == 'VAR':
+                self.outputFile.writePush('local', self.symbolTable.IndexOf(name))
+            elif self.symbolTable.KindOf(name) == 'ARG':
+                self.outputFile.writePush('argument', self.symbolTable.IndexOf(name))
+            elif self.symbolTable.KindOf(name) == 'STATIC':
+                self.outputFile.writePush('static', self.symbolTable.IndexOf(name))
+            else:
+                self.outputFile.writePush('this', self.symbolTable.IndexOf(name))
+        self.outputFile.writeArithmetic('add')
 
     def CompileExpressionList(self):
-        self.outputFile.write(' ' * self.spacesIndented + '<expressionList>\n')
-        self.spacesIndented += 1
-
-        if self.inputFile.tokenType() != 'SYMBOL' and self.inputFile.symbol() != ')':
+        expressions = 0
+        self.inputFile.advance()
+        if self.inputFile.currentToken in ['-', '~', 'true', 'false', 'null', 'this'] or self.inputFile.tokenType() in ['INT_CONST', 'STRING_CONST', 'IDENTIFIER']:
             self.CompileExpression()
-            while self.inputFile.tokenType() == 'SYMBOL' and self.inputFile.symbol() == ',':
-                self.compileSymbol()
-                self.inputFile.advance()
-                self.CompileExpression()
-        if self.inputFile.symbol() == '(':
+            expressions += 1
+        while self.inputFile.currentToken == ',':
+            self.inputFile.advance()
             self.CompileExpression()
-            while self.inputFile.tokenType() == 'SYMBOL' and self.inputFile.symbol() == ',':
-                self.compileSymbol()
-                self.inputFile.advance()
-                self.CompileExpression()
+            expressions += 1
+        return expressions
 
-        self.spacesIndented -= 1
-        self.outputFile.write(' ' * self.spacesIndented + '</expressionList>\n')

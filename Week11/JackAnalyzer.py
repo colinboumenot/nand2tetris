@@ -15,11 +15,13 @@ def main():
                 vmFile = vm.VMWriter(userInput + fileName + '.vm')
                 compiler = CompilationEngine.CompilationEngine(userInput + file, vmFile)
                 compiler.CompileClass()
+                vmFile.close()
     elif os.path.isfile(userInput):
         userInput = userInput.split('.')[0]
         vmFile = vm.VMWriter(userInput + '.vm')
         compiler = CompilationEngine.CompilationEngine(userInput + '.jack', vmFile)
         compiler.CompileClass()
+        vmFile.close()
 
 if __name__ == '__main__':
     main()

@@ -13,6 +13,7 @@ class SymbolTable:
         self.counter['VAR'] = 0
 
     def define(self, name, type, kind):
+        kind = kind.upper()
         if kind == 'FIELD':
             self.fieldScope[name] = (type, kind, self.counter[kind])
             self.counter[kind] += 1
@@ -27,6 +28,7 @@ class SymbolTable:
             self.counter[kind] += 1
 
     def VarCount(self, kind):
+        kind = kind.upper()
         return self.counter[kind]
 
     def KindOf(self, name):
@@ -35,9 +37,9 @@ class SymbolTable:
         elif name in self.fieldScope.keys():
             return self.fieldScope[name][1]
         elif name in self.staticScope.keys():
-            return self.fieldScope[name][1]
+            return self.staticScope[name][1]
         else:
-            return 'NONE'
+            return 'None'
 
     def TypeOf(self, name):
         if name in self.subroutineScope.keys():
@@ -45,9 +47,9 @@ class SymbolTable:
         elif name in self.fieldScope.keys():
             return self.fieldScope[name][0]
         elif name in self.staticScope.keys():
-            return self.fieldScope[name][0]
+            return self.staticScope[name][0]
         else:
-            return 'NONE'
+            return 'None'
 
     def IndexOf(self, name):
         if name in self.subroutineScope.keys():
@@ -55,6 +57,6 @@ class SymbolTable:
         elif name in self.fieldScope.keys():
             return self.fieldScope[name][2]
         elif name in self.staticScope.keys():
-            return self.fieldScope[name][2]
+            return self.staticScope[name][2]
         else:
-            return 'NONE'
+            return 'None'

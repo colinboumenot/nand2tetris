@@ -1,7 +1,7 @@
 class VMWriter:
 
     def __init__(self, outputFile):
-        self.outputFile = outputFile
+        self.outputFile = open(outputFile, 'w+')
 
     def writePush(self, segment, index):
         segment = segment.lower()
@@ -11,7 +11,7 @@ class VMWriter:
         elif segment == 'const':
             segment = 'constant'
 
-        self.outputFile.write('push ' + segment + ' ' + index + '\n')
+        self.outputFile.write('push ' + segment + ' ' + str(index) + '\n')
 
     def writePop(self, segment, index):
         segment = segment.lower()
@@ -21,7 +21,7 @@ class VMWriter:
         elif segment == 'const':
             segment = 'constant'
 
-        self.outputFile.write('pop ' + segment + ' ' + index + '\n')
+        self.outputFile.write('pop ' + segment + ' ' + str(index) + '\n')
 
     def writeArithmetic(self, command):
         command = command.lower()
@@ -37,10 +37,10 @@ class VMWriter:
         self.outputFile.write('if-goto ' + label + '\n')
 
     def writeCall(self, name, nArgs):
-        self.outputFile.write('call ' + name + ' ' + nArgs + '\n')
+        self.outputFile.write('call ' + name + ' ' + str(nArgs) + '\n')
 
     def writeFunction(self, name, nLocals):
-        self.outputFile.write('function ' + name + ' ' + nLocals + '\n')
+        self.outputFile.write('function ' + name + ' ' + str(nLocals) + '\n')
 
     def writeReturn(self):
         self.outputFile.write('return\n')
