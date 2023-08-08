@@ -71,7 +71,7 @@ class JackTokenizer:
             return 'SYMBOL'
         elif self.tokens[0].isdigit():
             return 'INT_CONST'
-        elif self.tokens[0].startswith("'") and self.tokens[0].endswith("'"):
+        elif self.tokens[0].startswith('"') and self.tokens[0].endswith('"'):
             return 'STRING_CONST'
         else:
             return 'IDENTIFIER'
