@@ -1,0 +1,176 @@
+class World {
+   static World worldInstance;
+   field Array map;
+
+   constructor World new(){
+     var int x, y;
+     let map = Array.new(512);
+     let x = 0;
+     while(x < 32) {
+       let map[(32 * 15) + x] = 1;
+       let x = x + 1;
+     }
+
+     let y = 0;
+     while (y < 16) {
+       let map[(32 * y) + 0] = 1;
+       let map[(32 * y) + 31] = 1;
+       let y = y + 1;
+     }
+     return this;
+   }
+
+   function void setWorld(){
+     let worldInstance = World.new();
+     return;
+   }
+
+   function World getWorld(){
+     return worldInstance;
+   }
+
+   method void drawSquare(int start, int end){
+     do Screen.drawRectangle(start * 16, end * 16, (start * 16) + 16, (end * 16) + 16);
+     return;
+   }
+
+   method void eraseSquare(int start, int end){
+     do Screen.setColor(false);
+     do Screen.drawRectangle(start * 16, end * 16, (start * 16) + 16, (end * 16) + 16);
+     do Screen.setColor(true);
+     return;
+   }
+
+   method void checkForLines(){
+     var int dx, dy, idx;
+     var boolean stopper;
+     var Array canBeDestroyed;
+     var boolean isDestroyed;
+     var int offset;
+     let canBeDestroyed = Array.new(15);
+     let isDestroyed = false;
+
+     let idx = (14*32) + 30;
+     let dy = 14;
+     while(dy > 1){
+       let dx = 30;
+       let canBeDestroyed[dy] = true;
+       while(dx > 0){
+         if(map[idx] = 0){
+           let canBeDestroyed[dy] = false;
+         }
+         let idx = idx - 1;
+         let dx = dx - 1;
+       }
+       if (canBeDestroyed[dy]){
+         let isDestroyed = true;
+       }
+       let idx = idx - 2;
+       let dy = dy - 1;
+     }
+
+     if (~isDestroyed) {
+//no lines destroyed
+      do canBeDestroyed.dispose();
+      return;
+     }
+
+     do draw();
+
+     let idx = (14*32) + 30;
+     let dy = 14;
+     while (dy > 1) {
+       if (canBeDestroyed[dy]) {
+         let dx = 30;
+         while (dx > 0) {
+           let map[idx] = 0;
+           let idx = idx - 1;
+           let dx = dx - 1;
+         }
+         let idx = idx - 2;
+       } else {
+         let idx = idx - 32;
+       }
+       let dy = dy - 1;
+     }
+
+     do draw();
+     let canBeDestroyed[0] = false;
+     let canBeDestroyed[1] = false;
+
+     let idx = (14*32) + 30;
+     let dy = 14;
+     let offset = 0;
+     while ((~(dy < 0))) {
+
+       let stopper = false;
+       while (~stopper) {
+         if ((dy - offset) < 0) {
+           let stopper = true;
+         } else {
+           if (~(canBeDestroyed[dy - offset])) {
+             let stopper = true;
+           } else {
+             let offset = offset + 1;
+           }
+         }
+       }
+
+       if (~((dy - offset) < 0)) {
+         let dx = 30;
+         while (dx > 0) {
+           let map[idx] = map[idx - (offset * 32)];
+
+           let idx = idx - 1;
+           let dx = dx - 1;
+         }
+         let idx = idx - 2;
+       } else {
+         let dx = 30;
+         while (dx > 0) {
+           let map[idx] = 0;
+
+           let idx = idx - 1;
+           let dx = dx - 1;
+         }
+         let idx = idx - 2;
+       }
+
+       let dy = dy - 1;
+     }
+     do draw();
+     do canBeDestroyed.dispose();
+     return;
+    }
+
+   method void draw(){
+     var int dx, dy, idx;
+     do Screen.setColor(false);
+     do Screen.drawRectangle(0, 0, 511, 255);
+     do Screen.setColor(true);
+     let idx = (2 * 32) + 1;
+     let dy = 2;
+     while(dy < 15){
+       let dx = 1;
+       while(dx < 31){
+         if (map[idx] = 1){
+           do drawSquare(dx, dy);
+         }
+         let idx = idx + 1;
+         let dx = dx + 1;
+       }
+       let idx = idx + 2;
+       let dy = dy + 1;
+     }
+     return;
+   }
+
+   method void placeShape(int x, int y){
+     let map[(32 * y) + x] = 1;
+     return;
+   }
+
+   method boolean isEmpty(int x, int y){
+     return map[(32 * y) + x] = 0;
+   }
+}
