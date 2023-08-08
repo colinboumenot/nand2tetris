@@ -19,8 +19,6 @@ class SymbolTable:
         self.ifCounter = 0
 
     def define(self, name, type, kind):
-        type = type.upper()
-        name = name.upper()
         kind = kind.upper()
         if kind == 'FIELD':
             self.fieldScope[name] = (type, kind, self.field)
@@ -44,7 +42,6 @@ class SymbolTable:
         return len([value for (item, value) in self.fieldScope.items() if value[1] == kind])
 
     def KindOf(self, name):
-        name = name.upper()
         if name in self.currentScope:
             return self.currentScope[name][1]
         if name in self.fieldScope:
@@ -53,7 +50,6 @@ class SymbolTable:
             return 'None'
 
     def TypeOf(self, name):
-        name = name.upper()
         if name in self.currentScope:
             return self.currentScope[name][0]
         if name in self.fieldScope:
@@ -62,7 +58,6 @@ class SymbolTable:
             return 'None'
 
     def IndexOf(self, name):
-        name = name.upper()
         if name in self.currentScope:
             return self.currentScope[name][2]
         if name in self.fieldScope:
