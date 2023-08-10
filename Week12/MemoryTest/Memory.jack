@@ -1,0 +1,70 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/Memory.jack
+
+/**
+ * This library provides two services: direct access to the computer's main
+ * memory (RAM), and allocation and recycling of memory blocks. The Hack RAM
+ * consists of 32,768 words, each holding a 16-bit binary number.
+ */ 
+class Memory {
+    static Array ram, heap;
+    static int freeList;
+    /** Initializes the class. */
+    function void init() {
+      let ram = 0;
+      let heap = 2048;
+      let freeList = 2048;
+      let heap[0] = 0;
+      let heap[1] = 14335;
+      return;
+    }
+
+    /** Returns the RAM value at the given address. */
+    function int peek(int address) {
+      return ram[address];
+    }
+
+    /** Sets the RAM value at the given address to the given value. */
+    function void poke(int address, int value) {
+      let ram[address] = value;
+      return;
+    }
+
+    /** Finds an available RAM block of the given size and returns
+     *  a reference to its base address. */
+    function int alloc(int size) {
+      var int address, actualSize;
+      var Array currentList;
+      var boolean seenAllList;
+
+      let address = 0;
+      let currentList = freeList;
+      let actualSize = size + 2;
+      let seenAllList = false;
+
+      while ((address = 0) & ~seenAllList){
+        if(currentList[0] = 0) {
+          let seenAllList = true;
+        }
+
+        if ((currentList[1] > actualSize) | (currentList[1] = actualSize)){
+          let address = currentList + currentList[1] - size;
+          let ram[address-1] = size;
+          let currentList[1] = currentList[1] - actualSize;
+        } else {
+          let currentList = currentList[0];
+        }
+      }
+      return address;
+    }
+
+    /** De-allocates the given object (cast as an array) by making
+     *  it available for future allocations. */
+    function void deAlloc(Array o) {
+      let ram[o-2] = freeList;
+      let freeList = o-2;
+      return;
+    }    
+}
