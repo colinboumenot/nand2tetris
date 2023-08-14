@@ -17,9 +17,6 @@ field length length;
     /** constructs a new empty string with a maximum length of maxLength
      *  and initial length of 0. */
     constructor String new(int maxLength) {
-      if (maxLength = 0){
-        let maxLength = 1;
-      }
       let string = Array.new(maxLength);
       let length = 0;
       return this;
@@ -51,7 +48,7 @@ field length length;
     method String appendChar(char c) {
       let string[length] = c;
       let length = length + 1;
-      return string;
+      return this;
     }
 
     /** Erases the last character from this string. */

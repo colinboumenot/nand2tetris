@@ -125,4 +125,8 @@ class Math {
       }
       return a;
     }
+
+    function int twoPower(int power){
+      return twoToThe[power];
+    }
 }

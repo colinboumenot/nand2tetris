@@ -339,3 +339,10 @@ return
 label IF_FALSE0
 push argument 0
 return
+function Math.twoPower 0
+push argument 0
+push static 0
+add
+pop pointer 1
+push that 0
+return

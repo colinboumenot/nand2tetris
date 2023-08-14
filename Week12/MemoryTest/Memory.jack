@@ -9,15 +9,17 @@
  * consists of 32,768 words, each holding a 16-bit binary number.
  */ 
 class Memory {
-    static Array ram, heap;
+    static Array ram;
+    static int heapStart, heapEnd;
     static int freeList;
     /** Initializes the class. */
     function void init() {
       let ram = 0;
-      let heap = 2048;
-      let freeList = 2048;
-      let heap[0] = 0;
-      let heap[1] = 14335;
+      let heapStart = 2048;
+      let heapEnd = 16383;
+      let freeList = heapStart + 2;
+      let ram[freeList - 1] = heapEnd - heapStart - 2;
+      let ram[freeList - 2] = -1;
       return;
     }
 
@@ -35,36 +37,42 @@ class Memory {
     /** Finds an available RAM block of the given size and returns
      *  a reference to its base address. */
     function int alloc(int size) {
-      var int address, actualSize;
-      var Array currentList;
-      var boolean seenAllList;
+      var int pointer, newBlock, previousPointer;
 
-      let address = 0;
-      let currentList = freeList;
-      let actualSize = size + 2;
-      let seenAllList = false;
+      let pointer = freeList;
+      let previousPointer = -1;
 
-      while ((address = 0) & ~seenAllList){
-        if(currentList[0] = 0) {
-          let seenAllList = true;
+      while ((ram[pointer - 1] < size)){
+        let previousPointer = pointer;
+        let pointer = ram[pointer - 2];
+      }
+      if (ram[pointer - 1] > size + 2){
+        if (previousPointer > -1){
+          let newBlock = pointer + size + 2;
+          let ram[previousPointer - 2] = newBlock;
+          let ram[newBlock - 2] = ram[pointer - 2];
+          let ram[newBlock - 1] = ram[pointer - 1] - (size + 2);
+        }else{
+          let freeList = pointer + size + 2;
+          let ram[freeList - 1] = ram[pointer - 1] - (size + 2);
+          let ram[freeList - 2] = ram[pointer - 2];
         }
-
-        if ((currentList[1] > actualSize) | (currentList[1] = actualSize)){
-          let address = currentList + currentList[1] - size;
-          let ram[address-1] = size;
-          let currentList[1] = currentList[1] - actualSize;
-        } else {
-          let currentList = currentList[0];
+      }else{
+        if(previousPointer > -1){
+          let ram[previousPointer - 2] = ram[pointer - 2];
+        }else{
+          let freeList = ram[pointer - 2];
         }
       }
-      return address;
+      let ram[pointer - 1] = size;
+      return pointer - 1;
     }
 
     /** De-allocates the given object (cast as an array) by making
      *  it available for future allocations. */
     function void deAlloc(Array o) {
-      let ram[o-2] = freeList;
-      let freeList = o-2;
+      let ram[o-1] = freeList;
+      let freeList = o + 1;
       return;
     }    
 }

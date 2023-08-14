@@ -23,6 +23,10 @@ pop temp 0
 pop pointer 1
 push temp 0
 pop that 0
+push local 0
+push constant 1
+add
+pop local 0
 goto WHILE_EXP0
 label WHILE_END0
 push constant 0
@@ -44,7 +48,7 @@ pop local 0
 push argument 0
 push constant 15
 and
-call Math.twoToThe 1
+call Math.twoPower 1
 pop local 1
 push static 1
 if-goto IF_TRUE0

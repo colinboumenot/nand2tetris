@@ -25,6 +25,7 @@ class Screen {
       let index = 0;
       while (index < 8192){
         let screen[index] = false;
+        let index = index + 1;
       }
       return;
     }
@@ -41,7 +42,7 @@ class Screen {
       var int address, mask;
 
       let address = (y * 32) + (x / 16);
-      let mask = Math.twoToThe(x & 15);
+      let mask = Math.twoPower(x & 15);
 
       if (color){
         let screen[address] = screen[address] | mask;
